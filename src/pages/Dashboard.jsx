@@ -153,7 +153,7 @@ const Dashboard = () => {
               <input
                 type="number"
                 min="1"
-                step="0.01"
+                step="1"
                 placeholder="Amount (EGP)"
                 value={newAmount}
                 onChange={(e) => setNewAmount(e.target.value)}

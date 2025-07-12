@@ -157,10 +157,14 @@ const Profile = () => {
 
       if (filterRange === "week") {
         const firstDayOfWeek = new Date(
-          now.setDate(now.getDate() - now.getDay())
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - now.getDay()
         );
         const lastDayOfWeek = new Date(
-          now.setDate(now.getDate() - now.getDay() + 6)
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - now.getDay() + 6
         );
         return expDate >= firstDayOfWeek && expDate <= lastDayOfWeek;
       }
