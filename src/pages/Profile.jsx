@@ -167,7 +167,7 @@ const Profile = () => {
           now.getDate() - now.getDay() + 6
         );
         return expDate >= firstDayOfWeek && expDate <= lastDayOfWeek;
-      }
+      } 
 
       if (filterRange === "month") {
         return (
