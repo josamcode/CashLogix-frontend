@@ -43,6 +43,8 @@ const Login = () => {
         formData
       );
 
+      // Temporary redeploy trigger
+
       document.cookie = `token=${res.data.token}; path=/; max-age=31536000`;
       document.cookie = `role=${formData.role}; path=/; max-age=31536000`;
 
