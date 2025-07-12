@@ -1,70 +1,188 @@
-# Getting Started with Create React App
+# CashLogix - Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, responsive expense tracking web application built with React, TailwindCSS, and integrated with a Node.js backend.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 📌 Overview
 
-### `npm start`
+CashLogix is a user-friendly expense management system that allows users to:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Track daily expenses
+- Analyze spending habits using interactive charts
+- Generate reports by category and date range
+- Export data as CSV
+- Manage accounts (user & supervisor roles)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🔧 Technologies Used
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| Technology         | Description                           |
+|--------------------|----------------------------------------|
+| React              | JavaScript framework for UI           |
+| React Router       | Client-side routing                   |
+| Axios              | HTTP client for API calls             |
+| Tailwind CSS       | Utility-first CSS framework           |
+| Recharts           | Chart library for visual analytics    |
+| SweetAlert2        | Enhanced popup alerts                 |
+| Context API        | State management                      |
+| React-Select       | Custom select inputs with creatable options |
+| SWR / useEffect    | Data fetching and synchronization     |
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🗂️ Folder Structure
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+/src
+├── assets/            --> Images and static files
+├── components/        --> Reusable UI components
+│   ├── Header.jsx     --> Navigation bar with auth handling
+│   ├── Footer.jsx     --> Footer section
+│   └── CategorySelect.jsx --> Custom dropdown for categories
+├── context/           --> Global state management
+│   └── AuthContext.jsx--> Handles login/logout/token persistence
+├── pages/             --> Main views
+│   ├── Home.jsx       --> Landing page
+│   ├── Login.jsx      --> Authentication form
+│   ├── Register.jsx   --> Sign-up form
+│   ├── Dashboard.jsx  --> Expense creation and overview
+│   ├── Profile.jsx    --> View/edit expenses
+│   ├── Reports.jsx    --> Analytics and charts
+│   └── NotFound.jsx   --> 404 fallback page
+├── utils/             --> Helper functions
+│   └── getCookie.js   --> Cookie reader utility
+├── App.jsx            --> Main app component and routing
+├── index.css          --> Tailwind and global styles
+└── index.js           --> Entry point of the app
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🛠️ Setup Instructions
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. Clone the repository:
+   ```bash
+   git clone <your-repo-url>
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+3. Make sure your backend server is running on:
+   ```
+   http://localhost:5000
+   ```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+4. Start the development server:
+   ```bash
+   npm start
+   ```
 
-## Learn More
+5. Open in browser:
+   ```
+   http://localhost:3000
+   ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🎨 Key Features
 
-### Code Splitting
+### 🖥️ User Interface
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+| Page       | Description                             |
+|------------|------------------------------------------|
+| Home       | Introduction and marketing view          |
+| Login      | Role-based authentication                |
+| Register   | Create new account with auto-generated supervisor password |
+| Dashboard  | Add and manage expenses                  |
+| Profile    | View and edit personal expenses          |
+| Reports    | Visualize spending by category/month     |
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### 💰 Expense Management
 
-### Making a Progressive Web App
+- Users can:
+  - Add expenses with amount, category, description, and date
+  - Edit or delete their own expenses
+  - Filter by category and date range
+  - View total monthly/yearly expenses
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- Supervisors can:
+  - Log in with separate password (`password2`)
+  - View all data but cannot modify it
 
-### Advanced Configuration
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### 📊 Reporting Tools
 
-### Deployment
+- **Pie Chart**: Distribution of expenses by category
+- **Line Chart**: Monthly trend of expenses
+- **Bar Chart**: Total spent per category
+- **CSV Export**: Export filtered data for offline use
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## 🔐 Authentication System
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Uses cookie-based token storage
+- JWT tokens are persisted after login
+- Role-based access control:
+  - `user`: Can add/edit/delete expenses
+  - `supervisor`: Read-only access
+
+---
+
+## 🧩 Dependencies
+
+```json
+{
+  "dependencies": {
+    "axios": "^1.10.0",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.3",
+    "react-scripts": "5.0.1",
+    "react-select": "^5.10.1",
+    "recharts": "^3.1.0",
+    "sweetalert2": "^11.22.2"
+  }
+}
+```
+
+---
+
+## 📦 Styling
+
+- Built with **Tailwind CSS**
+- Responsive layout for mobile and desktop
+- Custom color theme and fonts (`Kanit`, `Rubik`)
+
+---
+
+## 📄 Deployment
+
+To build for production:
+```bash
+npm run build
+```
+
+Then deploy the `/build` folder to your hosting provider (e.g., Vercel, Netlify, Firebase Hosting).
+
+---
+
+## 🧪 Future Improvements
+
+- Add unit/integration tests
+- Implement PDF report generation
+- Add dark mode toggle
+- Improve accessibility and localization
+- Add calendar heatmap for daily insights
+
+---
