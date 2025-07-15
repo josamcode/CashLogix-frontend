@@ -210,17 +210,19 @@ const Reports = () => {
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   return (
-    <div className="py-10 px-6 max-w-7xl mx-auto">
+    <div className="py-6 sm:py-10 px-6 max-w-7xl mx-auto">
       <h2 className="text-3xl font-bold mb-6">Expenses Reports</h2>
 
       {/* Filters */}
       <section className="mb-8 flex flex-wrap gap-6 items-end">
-        <div className="flex flex-col min-w-[180px]">
-          <label className="mb-1 font-semibold text-gray-700">Category</label>
+        <div className="flex flex-col w-full sm:w-auto min-w-[180px]">
+          <label className="mb-1 text-sm font-medium text-gray-700">
+            Category
+          </label>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            className="border border-gray-300 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
             <option value="all">All Categories</option>
             {[...new Set(user.expenses?.map((e) => e.category))].map((cat) => (
@@ -231,18 +233,21 @@ const Reports = () => {
           </select>
         </div>
 
-        <div className="flex flex-col min-w-[280px]">
-          <label className="mb-1 font-semibold text-gray-700">Date Range</label>
-          <div className="flex flex-wrap gap-4">
+        {/* Filter by Date - Radio Buttons */}
+        <div className="flex flex-col w-full sm:w-auto min-w-[280px]">
+          <label className="mb-1 text-sm font-medium text-gray-700">
+            Date Range
+          </label>
+          <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap">
             {["day", "week", "month", "year", "all", "custom"].map((range) => (
               <label
                 key={range}
                 className={`flex items-center cursor-pointer select-none rounded-md border px-3 py-2 transition
-            ${
-              filterRange === range
-                ? "bg-blue-600 border-blue-600 text-white"
-                : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
-            }`}
+        ${
+          filterRange === range
+            ? "bg-blue-600 border-blue-600 text-white"
+            : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
+        }`}
               >
                 <input
                   type="radio"
@@ -270,19 +275,19 @@ const Reports = () => {
           </div>
 
           {filterRange === "custom" && (
-            <div className="flex gap-4 mt-3">
+            <div className="flex gap-4 mt-3 flex-wrap">
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition w-full sm:w-auto"
                 placeholder="Start Date"
               />
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition w-full sm:w-auto"
                 placeholder="End Date"
               />
             </div>

@@ -8,6 +8,7 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (loadingToken || !token) {
@@ -17,11 +18,16 @@ const Home = () => {
 
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/getUser`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/getUser`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setUser(res.data.user);
         setError(null);
+
+        navigate("/dashboard");
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load user data.");
         setUser(null);

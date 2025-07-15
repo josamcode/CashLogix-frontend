@@ -167,7 +167,7 @@ const Profile = () => {
           now.getDate() - now.getDay() + 6
         );
         return expDate >= firstDayOfWeek && expDate <= lastDayOfWeek;
-      } 
+      }
 
       if (filterRange === "month") {
         return (
@@ -298,7 +298,7 @@ const Profile = () => {
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   return (
-    <div className="py-10 px-4">
+    <div className="sm:py-10">
       <div className="max-w-7xl mx-auto rounded-xl p-6">
         <h2 className="text-3xl font-bold text-textMain mb-6 font-kanit">
           User Profile
@@ -316,25 +316,13 @@ const Profile = () => {
             <p className="text-sm text-gray-500">Phone</p>
             <p className="font-medium text-lg">{user.phone}</p>
           </div>
-          {/* <div className="p-4 border rounded-md bg-gray-50">
-            <p className="text-sm text-gray-500">Created At</p>
-            <p className="font-medium">
-              {new Date(user.createdAt).toLocaleString()}
-            </p>
-          </div>
-          <div className="p-4 border rounded-md bg-gray-50">
-            <p className="text-sm text-gray-500">Updated At</p>
-            <p className="font-medium">
-              {new Date(user.updatedAt).toLocaleString()}
-            </p>
-          </div> */}
           <div className="p-4 border rounded-md bg-gray-50">
             <p className="text-sm text-gray-500">Supervisor Password</p>
             <p className="font-medium">{user.password2}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 mb-8">
           <div className="p-4 border rounded-md bg-blue-50">
             <p className="pb-2 text-sm text-gray-600">
               Total Expenses This Month
@@ -367,29 +355,12 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="my-6">
-          <p className="text-lg font-medium mb-2">Expenses by Month</p>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={chartData}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="total"
-                stroke="#3b82f6"
-                strokeWidth={2}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
         <div>
           <h3 className="text-2xl font-semibold mb-4">Recent Expenses</h3>
           {/* filter */}
-          <div className="mb-6 flex flex-wrap items-center gap-6">
+          <div className="mb-6 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-6">
             {/* Filter by Category */}
-            <div className="flex flex-col min-w-[180px]">
+            <div className="flex flex-col w-full sm:w-auto min-w-[180px]">
               <label className="mb-1 text-sm font-medium text-gray-700">
                 Category
               </label>
@@ -410,21 +381,21 @@ const Profile = () => {
             </div>
 
             {/* Filter by Date - Radio Buttons */}
-            <div className="flex flex-col min-w-[280px]">
+            <div className="flex flex-col w-full sm:w-auto min-w-[280px]">
               <label className="mb-1 text-sm font-medium text-gray-700">
                 Date Range
               </label>
-              <div className="flex flex-wrap gap-4">
+              <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap">
                 {["day", "week", "month", "year", "all", "custom"].map(
                   (range) => (
                     <label
                       key={range}
                       className={`flex items-center cursor-pointer select-none rounded-md border px-3 py-2 transition
-            ${
-              filterRange === range
-                ? "bg-blue-600 border-blue-600 text-white"
-                : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
-            }`}
+        ${
+          filterRange === range
+            ? "bg-blue-600 border-blue-600 text-white"
+            : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
+        }`}
                     >
                       <input
                         type="radio"
@@ -452,21 +423,20 @@ const Profile = () => {
                 )}
               </div>
 
-              {/* Custom Date Range Inputs */}
               {filterRange === "custom" && (
-                <div className="flex gap-4 mt-3">
+                <div className="flex gap-4 mt-3 flex-wrap">
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition w-full sm:w-auto"
                     placeholder="Start Date"
                   />
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition w-full sm:w-auto"
                     placeholder="End Date"
                   />
                 </div>
@@ -475,7 +445,7 @@ const Profile = () => {
           </div>
 
           {filteredExpenses && filteredExpenses.length > 0 ? (
-            <ul className="grid gap-5 sm:grid-cols-1 md:grid-cols-2">
+            <ul className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
               {filteredExpenses
                 .slice(0, 6)
                 .reverse()

@@ -5,6 +5,8 @@ import { AuthContext } from "../context/AuthContext";
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
 import getCookie from "../utils/getCookie";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const Dashboard = () => {
   const { token, loadingToken } = useContext(AuthContext);
@@ -46,9 +48,12 @@ const Dashboard = () => {
 
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/getUser`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/getUser`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setUser(res.data.user);
         setError(null);
       } catch (err) {
@@ -132,126 +137,157 @@ const Dashboard = () => {
     }
   };
 
+  const today = new Date();
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
   if (loading) return <div className="p-8 text-center">Loading profile...</div>;
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   return (
-    <div className="py-10 px-4">
-      <div className="max-w-7xl mx-auto rounded-xl p-6">
-        <h2 className="text-3xl font-bold text-textMain mb-6 font-kanit">
+    <div className="sm:py-6 min-h-[calc(100vh-70px)] flex w-full items-start">
+      <div className="w-full max-w-7xl mx-auto rounded-xl p-6">
+        <h2 className="text-3xl font-bold text-textMain mb-6 font-kanit hidden sm:block">
           Welcome, {user.username}
         </h2>
 
         {usertypeFromCookie !== "supervisor" && (
           <form
             onSubmit={handleCreateExpense}
-            className="mb-8 border rounded-md p-6 bg-blue-50"
+            className="mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 sm:bg-blue-50"
           >
-            <h3 className="text-2xl font-semibold mb-4">Add New Expense</h3>
+            <h3 className="text-xl sm:text-2xl font-semibold mb-6 text-gray-800">
+              Add New Expense
+            </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="number"
-                min="1"
-                step="1"
-                placeholder="Amount (EGP)"
-                value={newAmount}
-                onChange={(e) => setNewAmount(e.target.value)}
-                required
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              />
-              {/* <CategorySelect
-                categoriesFromUser={categoriesFromUser}
-                newCategory={newCategory}
-                setNewCategory={setNewCategory}
-              /> */}
-              {!isAddingCategory ? (
-                <select
-                  value={newCategory}
-                  onChange={(e) => {
-                    if (e.target.value === "__add_new__") {
-                      setIsAddingCategory(true);
-                      setNewCategory("");
-                    } else {
-                      setNewCategory(e.target.value);
-                    }
-                  }}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Amount */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-gray-600 font-medium">
+                  Amount (EGP)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={newAmount}
+                  onChange={(e) => setNewAmount(e.target.value)}
                   required
-                  className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                >
-                  <option value="">Select Category</option>
-                  {categoriesFromUser.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                  <option value="__add_new__">+ Add New Category</option>
-                </select>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter new category"
-                    value={newCategoryName}
+                  placeholder="e.g. 150"
+                  className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
+                />
+              </div>
+
+              {/* Category Select */}
+              <div className="flex flex-col gap-1 sm:col-span-1">
+                <label className="text-sm text-gray-600 font-medium">
+                  Category
+                </label>
+
+                {!isAddingCategory ? (
+                  <select
+                    value={newCategory}
                     onChange={(e) => {
-                      setNewCategoryName(e.target.value);
-                      setNewCategory(e.target.value);
+                      if (e.target.value === "__add_new__") {
+                        setIsAddingCategory(true);
+                        setNewCategory("");
+                      } else {
+                        setNewCategory(e.target.value);
+                      }
                     }}
                     required
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition flex-grow"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAddingCategory(false);
-                      setNewCategory("");
-                      setNewCategoryName("");
-                    }}
-                    className="text-red-500 hover:text-red-700 font-semibold"
+                    className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
                   >
-                    Cancel
-                  </button>
+                    <option value="">Select Category</option>
+                    {categoriesFromUser.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                    <option value="__add_new__">+ Add New Category</option>
+                  </select>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter new category"
+                      value={newCategoryName}
+                      onChange={(e) => {
+                        setNewCategoryName(e.target.value);
+                        setNewCategory(e.target.value);
+                      }}
+                      required
+                      className="flex-grow border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingCategory(false);
+                        setNewCategory("");
+                        setNewCategoryName("");
+                      }}
+                      className="text-red-500 hover:text-red-700 font-medium text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-end sm:gap-4 gap-1 sm:col-span-2">
+                {/* Date Picker */}
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-sm text-gray-600 font-medium">
+                    Date
+                  </label>
+                  <DatePicker
+                    selected={newDate ? new Date(newDate) : null}
+                    onChange={(date) =>
+                      setNewDate(date?.toISOString().split("T")[0] || "")
+                    }
+                    dateFormat="yyyy-MM-dd"
+                    minDate={oneMonthAgo}
+                    maxDate={today}
+                    placeholderText="Pick a date (optional, today if left empty)"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
+                    showPopperArrow={false}
+                  />
                 </div>
-              )}
 
-              <input
-                type="date"
-                min={
-                  new Date(new Date().setMonth(new Date().getMonth() - 1))
-                    .toISOString()
-                    .split("T")[0]
-                }
-                max={new Date().toISOString().split("T")[0]}
-                value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              />
+                {/* Hint */}
+                <p className="text-xs text-gray-500 italic sm:mb-1 sm:mt-auto hidden sm:block flex-1">
+                  If left empty, today's date will be used.
+                </p>
+              </div>
 
-              <p className="text-s text-gray-500 italic mt-1">
-                If left empty, today's date will be used.
-              </p>
-
-              <textarea
-                placeholder="Description (optional)"
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition md:col-span-2"
-                rows={3}
-              />
+              {/* Description */}
+              <div className="sm:col-span-2 flex flex-col gap-1">
+                <label className="text-sm text-gray-600 font-medium">
+                  Description (optional)
+                </label>
+                <textarea
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
+                  rows={3}
+                  placeholder="e.g. Lunch at work, electricity bill..."
+                />
+              </div>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={creatingExpense}
-              className="mt-4 w-full bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+              className="mt-6 w-full bg-blue-600 text-white px-5 py-2.5 rounded-md hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium"
             >
               {creatingExpense ? "Adding..." : "Add Expense"}
             </button>
           </form>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="p-4 border rounded-md bg-blue-50">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-6">
+          <div className="p-3 sm:p-4 border rounded-md bg-blue-50">
             <p className="pb-2 text-sm text-gray-600">
               Total Expenses This Month
             </p>
@@ -259,7 +295,7 @@ const Dashboard = () => {
               EGP {totalMonthlyAmount}
             </p>
           </div>
-          <div className="p-4 border rounded-md bg-green-50">
+          <div className="p-3 sm:p-4 border rounded-md bg-green-50 hidden sm:block">
             <p className="pb-2 text-sm text-gray-600">All-Time Total</p>
             <p className="text-2xl font-bold text-green-700">
               EGP{" "}
@@ -267,56 +303,59 @@ const Dashboard = () => {
             </p>
           </div>
         </div>
+        <div className="hidden sm:block">
+          <div>
+            <h3 className="text-2xl font-semibold mb-4">Recent Expenses</h3>
+            {filteredExpenses && filteredExpenses.length > 0 ? (
+              <ul className="grid gap-5 sm:grid-cols-1 md:grid-cols-2">
+                {filteredExpenses.slice(0, 3).map((exp) => (
+                  <li
+                    key={exp._id}
+                    className="rounded-lg border border-gray-200 bg-white shadow-sm p-3 sm:p-5 min-h-[100px]"
+                  >
+                    <div className="flex justify-between items-center mb-3">
+                      <span
+                        className={`text-base font-semibold text-blue-600 ${
+                          /[\u0600-\u06FF]/.test(exp.category)
+                            ? "font-Rubik"
+                            : ""
+                        }`}
+                      >
+                        {exp.category}
+                      </span>
+                      <span className="text-sm text-gray-400">
+                        {new Date(exp.date).toLocaleDateString()}
+                      </span>
+                    </div>
 
-        <div>
-          <h3 className="text-2xl font-semibold mb-4">Recent Expenses</h3>
-          {filteredExpenses && filteredExpenses.length > 0 ? (
-            <ul className="grid gap-5 sm:grid-cols-1 md:grid-cols-2">
-              {filteredExpenses.slice(0, 3).map((exp) => (
-                <li
-                  key={exp._id}
-                  className="rounded-xl border border-gray-200 bg-white shadow-sm p-5"
-                >
-                  <div className="flex justify-between items-center mb-3">
-                    <span
-                      className={`text-base font-semibold text-blue-600 ${
-                        /[\u0600-\u06FF]/.test(exp.category) ? "font-Rubik" : ""
+                    <p
+                      className={`text-gray-700 mb-2 line-clamp-2 ${
+                        /[\u0600-\u06FF]/.test(exp.description)
+                          ? "font-Rubik"
+                          : ""
                       }`}
                     >
-                      {exp.category}
-                    </span>
-                    <span className="text-sm text-gray-400">
-                      {new Date(exp.date).toLocaleDateString()}
-                    </span>
-                  </div>
+                      {exp.description || ""}
+                    </p>
 
-                  <p
-                    className={`text-gray-700 mb-2 line-clamp-2 ${
-                      /[\u0600-\u06FF]/.test(exp.description)
-                        ? "font-Rubik"
-                        : ""
-                    }`}
+                    <p className="text-right text-lg font-bold text-green-600">
+                      EGP {exp.amount}
+                    </p>
+                  </li>
+                ))}
+                <li>
+                  <Link
+                    to="/profile"
+                    className="rounded-xl h-full border border-gray-200 bg-white shadow-sm p-5 cursor-pointer hover:bg-gray-50 flex items-center justify-center text-blue-600 font-semibold gap-2"
                   >
-                    {exp.description || ""}
-                  </p>
-
-                  <p className="text-right text-lg font-bold text-green-600">
-                    EGP {exp.amount}
-                  </p>
+                    Show more <ArrowRightIcon className="w-5 h-5" />
+                  </Link>
                 </li>
-              ))}
-              <li>
-                <Link
-                  to="/profile"
-                  className="rounded-xl h-full border border-gray-200 bg-white shadow-sm p-5 cursor-pointer hover:bg-gray-50 flex items-center justify-center text-blue-600 font-semibold gap-2"
-                >
-                  Show more <ArrowRightIcon className="w-5 h-5" />
-                </Link>
-              </li>
-            </ul>
-          ) : (
-            <p className="text-gray-500">No expenses recorded yet.</p>
-          )}
+              </ul>
+            ) : (
+              <p className="text-gray-500">No expenses recorded yet.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
