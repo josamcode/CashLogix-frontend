@@ -8,6 +8,7 @@
     "react": "^19.1.0",
     "react-datepicker": "^8.4.0",
     "react-dom": "^19.1.0",
+    "react-phone-input-2": "^2.15.1",
     "react-router-dom": "^7.6.3",
     "react-scripts": "5.0.1",
     "react-select": "^5.10.1",

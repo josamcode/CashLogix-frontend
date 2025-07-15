@@ -4,6 +4,9 @@ import axios from "axios";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 import { AuthContext } from "../context/AuthContext";
 
+import "react-phone-input-2/lib/style.css";
+import PhoneInput from "react-phone-input-2";
+
 const Register = () => {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
@@ -25,15 +28,28 @@ const Register = () => {
   };
 
   const validateForm = () => {
-    const phoneRegex = /^01[0-2,5]{1}[0-9]{8}$/;
-    if (!phoneRegex.test(formData.phone)) {
-      setError("Phone number is invalid. Must start with 01 and be 11 digits.");
+    const phoneRegex = /^\+(?:[0-9] ?){10,14}[0-9]$/;
+
+    let phoneWithPlus = formData.phone;
+    if (!phoneWithPlus.startsWith("+")) {
+      phoneWithPlus = "+" + phoneWithPlus;
+    }
+
+    if (!phoneRegex.test(phoneWithPlus)) {
+      setError("Phone number is invalid. Must be an international number.");
       return false;
     }
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return false;
     }
+
+    if (formData.username.length < 8) {
+      setError("Username must be at least 8 characters.");
+      return false;
+    }
+
     return true;
   };
 
@@ -87,7 +103,6 @@ const Register = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* ... here keep all your input fields and submit button as is ... */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Full name
@@ -104,17 +119,32 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Phone
               </label>
-              <input
-                type="text"
-                name="phone"
+              <PhoneInput
+                country={"eg"}
                 value={formData.phone}
-                onChange={handleChange}
-                placeholder="01xxxxxxxxx"
-                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                required
+                onChange={(phone) => setFormData({ ...formData, phone })}
+                inputProps={{
+                  name: "phone",
+                  required: true,
+                  autoFocus: true,
+                }}
+                placeholder="+20XXXXXXXXXX"
+                enableAreaCodes={false}
+                countryCodeEditable={false}
+                inputStyle={{
+                  width: "100%",
+                  padding: "12px 45px",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc",
+                }}
+                buttonStyle={{
+                  borderRight: "1px solid #ccc",
+                  backgroundColor: "#f9f9f9",
+                }}
+                specialLabel={null}
               />
             </div>
 

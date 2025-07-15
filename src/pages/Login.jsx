@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
@@ -25,6 +28,10 @@ const Login = () => {
     }));
   };
 
+  const handlePhoneChange = (phone) => {
+    setFormData((prev) => ({ ...prev, phone: phone }));
+  };
+
   const handleRoleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -32,10 +39,28 @@ const Login = () => {
     }));
   };
 
+  const validateForm = () => {
+    const phoneRegex = /^[0-9]{10,15}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      setError(
+        "Phone number is invalid. Must be an international number starting with '+'."
+      );
+      return false;
+    }
+    if (!formData.password || formData.password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    if (!validateForm()) return;
+
+    setLoading(true);
 
     try {
       const res = await axios.post(
@@ -43,13 +68,12 @@ const Login = () => {
         formData
       );
 
-      // Temporary redeploy trigger
-
       document.cookie = `token=${res.data.token}; path=/; max-age=31536000`;
-      document.cookie = `role=${formData.role}; path=/; max-age=31536000`;
+      if (formData.role) {
+        document.cookie = `role=${formData.role}; path=/; max-age=31536000`;
+      }
 
       login(res.data.token);
-
       navigate("/home");
     } catch (err) {
       setError(err.response?.data?.message || "Error while login!");
@@ -71,18 +95,26 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Phone */}
-          <div>
+          <div className="mb-4">
             <label className="block mb-2 font-semibold text-gray-700">
               Phone
             </label>
-            <input
-              type="text"
-              name="phone"
+            <PhoneInput
+              country={"eg"}
               value={formData.phone}
-              onChange={handleChange}
-              placeholder="01xxxxxxxxx"
-              required
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handlePhoneChange}
+              inputProps={{ name: "phone", required: true, autoFocus: true }}
+              inputStyle={{
+                width: "100%",
+                padding: "12px 45px",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+              }}
+              buttonStyle={{
+                borderRight: "1px solid #ccc",
+                backgroundColor: "#f9f9f9",
+              }}
+              specialLabel={null}
             />
           </div>
 
