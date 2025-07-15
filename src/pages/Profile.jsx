@@ -1,22 +1,17 @@
 import { useEffect, useState, useContext, useMemo } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
-import { UserCircleIcon } from "@heroicons/react/24/solid";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+  ArrowRightOnRectangleIcon,
+  UserCircleIcon,
+} from "@heroicons/react/24/solid";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import getCookie from "../utils/getCookie";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-  const { token, loadingToken } = useContext(AuthContext);
+  const { token, loadingToken, logout } = useContext(AuthContext);
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -138,6 +133,25 @@ const Profile = () => {
     } finally {
       setLoadingDelete(null);
     }
+  };
+
+  const handleLogout = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to log out?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, log me out",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        navigate("/login");
+        Swal.fire("Logged out!", "", "success");
+      }
+    });
   };
 
   const dateFilteredExpenses = useMemo(() => {
@@ -278,22 +292,6 @@ const Profile = () => {
     );
   }, [dateFilteredExpenses, selectedCategory]);
 
-  const chartData = useMemo(() => {
-    const monthlyData = Array.from({ length: 12 }, (_, i) => ({
-      month: i,
-      total: 0,
-    }));
-    user?.expenses?.forEach((exp) => {
-      const d = new Date(exp.date);
-      if (d.getFullYear() === currentYear)
-        monthlyData[d.getMonth()].total += exp.amount;
-    });
-    return monthlyData.map((d) => ({
-      name: new Date(0, d.month).toLocaleString("default", { month: "short" }),
-      total: d.total,
-    }));
-  }, [user]);
-
   if (loading) return <div className="p-8 text-center">Loading profile...</div>;
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
@@ -304,11 +302,21 @@ const Profile = () => {
           User Profile
         </h2>
 
-        <div className="flex items-center gap-4 mb-6">
-          <UserCircleIcon className="w-14 h-14 text-gray-700" />
-          <div>
-            <p className="text-xl font-semibold">{user.username}</p>
+        <div className="flex items-center justify-between w-full mb-6">
+          <div className="flex items-center gap-4">
+            <UserCircleIcon className="w-14 h-14 text-gray-700" />
+            <div>
+              <p className="text-xl font-semibold">{user.username}</p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+          >
+            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            Logout
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
