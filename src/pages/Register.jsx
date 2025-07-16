@@ -131,9 +131,9 @@ const Register = () => {
                   required: true,
                   autoFocus: true,
                 }}
-                placeholder="+20XXXXXXXXXX"
+                placeholder="+201XXXXXXXXX"
                 enableAreaCodes={false}
-                countryCodeEditable={false}
+                countryCodeEditable={true}
                 inputStyle={{
                   width: "100%",
                   padding: "12px 45px",

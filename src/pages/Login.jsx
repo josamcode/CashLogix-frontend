@@ -104,6 +104,7 @@ const Login = () => {
               value={formData.phone}
               onChange={handlePhoneChange}
               inputProps={{ name: "phone", required: true, autoFocus: true }}
+              placeholder="+201XXXXXXXXX"
               inputStyle={{
                 width: "100%",
                 padding: "12px 45px",
