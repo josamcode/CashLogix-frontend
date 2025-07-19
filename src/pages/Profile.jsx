@@ -169,20 +169,6 @@ const Profile = () => {
         return expDay === today;
       }
 
-      if (filterRange === "week") {
-        const firstDayOfWeek = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate() - now.getDay()
-        );
-        const lastDayOfWeek = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate() - now.getDay() + 6
-        );
-        return expDate >= firstDayOfWeek && expDate <= lastDayOfWeek;
-      }
-
       if (filterRange === "month") {
         return (
           expDate.getMonth() === new Date().getMonth() &&
@@ -394,41 +380,37 @@ const Profile = () => {
                 Date Range
               </label>
               <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap">
-                {["day", "week", "month", "year", "all", "custom"].map(
-                  (range) => (
-                    <label
-                      key={range}
-                      className={`flex items-center cursor-pointer select-none rounded-md border px-3 py-2 transition
+                {["day", "month", "year", "all", "custom"].map((range) => (
+                  <label
+                    key={range}
+                    className={`flex items-center cursor-pointer select-none rounded-md border px-3 py-2 transition
         ${
           filterRange === range
             ? "bg-blue-600 border-blue-600 text-white"
             : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
         }`}
-                    >
-                      <input
-                        type="radio"
-                        name="dateRange"
-                        value={range}
-                        checked={filterRange === range}
-                        onChange={(e) => setFilterRange(e.target.value)}
-                        className="hidden"
-                      />
-                      <span className="capitalize">
-                        {range === "day"
-                          ? "Today"
-                          : range === "week"
-                          ? "This Week"
-                          : range === "month"
-                          ? "This Month"
-                          : range === "year"
-                          ? "This Year"
-                          : range === "all"
-                          ? "All Time"
-                          : "Custom Range"}
-                      </span>
-                    </label>
-                  )
-                )}
+                  >
+                    <input
+                      type="radio"
+                      name="dateRange"
+                      value={range}
+                      checked={filterRange === range}
+                      onChange={(e) => setFilterRange(e.target.value)}
+                      className="hidden"
+                    />
+                    <span className="capitalize">
+                      {range === "day"
+                        ? "Today"
+                        : range === "month"
+                        ? "This Month"
+                        : range === "year"
+                        ? "This Year"
+                        : range === "all"
+                        ? "All Time"
+                        : "Custom Range"}
+                    </span>
+                  </label>
+                ))}
               </div>
 
               {filterRange === "custom" && (
@@ -455,7 +437,6 @@ const Profile = () => {
           {filteredExpenses && filteredExpenses.length > 0 ? (
             <ul className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
               {filteredExpenses
-                .slice(0, 6)
                 .reverse()
                 .map((exp) => (
                   <li

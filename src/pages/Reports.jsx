@@ -123,20 +123,6 @@ const Reports = () => {
         return expDay === today;
       }
 
-      if (filterRange === "week") {
-        const firstDayOfWeek = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate() - now.getDay()
-        );
-        const lastDayOfWeek = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate() - now.getDay() + 6
-        );
-        return expDate >= firstDayOfWeek && expDate <= lastDayOfWeek;
-      }
-
       if (filterRange === "month") {
         return (
           expDate.getMonth() === now.getMonth() &&
@@ -239,7 +225,7 @@ const Reports = () => {
             Date Range
           </label>
           <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap">
-            {["day", "week", "month", "year", "all", "custom"].map((range) => (
+            {["day", "month", "year", "all", "custom"].map((range) => (
               <label
                 key={range}
                 className={`flex items-center cursor-pointer select-none rounded-md border px-3 py-2 transition
@@ -260,8 +246,6 @@ const Reports = () => {
                 <span className="capitalize">
                   {range === "day"
                     ? "Today"
-                    : range === "week"
-                    ? "This Week"
                     : range === "month"
                     ? "This Month"
                     : range === "year"
