@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import getCookie from "../utils/getCookie";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Cookies from "js-cookie";
 
 const Dashboard = () => {
   const { token, loadingToken } = useContext(AuthContext);
@@ -59,6 +60,8 @@ const Dashboard = () => {
       } catch (err) {
         setError(err.response?.data?.message || "Something went wrong");
         setUser(null);
+        Cookies.remove("token");
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -315,11 +318,10 @@ const Dashboard = () => {
                   >
                     <div className="flex justify-between items-center mb-3">
                       <span
-                        className={`text-base font-semibold text-blue-600 ${
-                          /[\u0600-\u06FF]/.test(exp.category)
-                            ? "font-Rubik"
-                            : ""
-                        }`}
+                        className={`text-base font-semibold text-blue-600 ${/[\u0600-\u06FF]/.test(exp.category)
+                          ? "font-Rubik"
+                          : ""
+                          }`}
                       >
                         {exp.category}
                       </span>
@@ -329,11 +331,10 @@ const Dashboard = () => {
                     </div>
 
                     <p
-                      className={`text-gray-700 mb-2 line-clamp-2 ${
-                        /[\u0600-\u06FF]/.test(exp.description)
-                          ? "font-Rubik"
-                          : ""
-                      }`}
+                      className={`text-gray-700 mb-2 line-clamp-2 ${/[\u0600-\u06FF]/.test(exp.description)
+                        ? "font-Rubik"
+                        : ""
+                        }`}
                     >
                       {exp.description || ""}
                     </p>

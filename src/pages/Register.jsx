@@ -28,15 +28,13 @@ const Register = () => {
   };
 
   const validateForm = () => {
-    const phoneRegex = /^\+(?:[0-9] ?){10,14}[0-9]$/;
+    let phone = formData.phone;
+    phone = normalizeEgyptPhone(phone);
 
-    let phoneWithPlus = formData.phone;
-    if (!phoneWithPlus.startsWith("+")) {
-      phoneWithPlus = "+" + phoneWithPlus;
-    }
+    const phoneRegex = /^01[0-9]{9}$/;
 
-    if (!phoneRegex.test(phoneWithPlus)) {
-      setError("Phone number is invalid. Must be an international number.");
+    if (!phoneRegex.test(phone)) {
+      setError("Phone number is invalid. Must be an Egyptian number starting with 01 and 11 digits.");
       return false;
     }
 
@@ -53,6 +51,13 @@ const Register = () => {
     return true;
   };
 
+  const normalizeEgyptPhone = (phone) => {
+    if (phone.startsWith("20")) {
+      return "0" + phone.slice(2);
+    }
+    return phone;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -63,10 +68,16 @@ const Register = () => {
       setLoading(false);
       return;
     }
+
+    const normalizedPhone = normalizeEgyptPhone(formData.phone);
+
     try {
       const res = await axios.post(
         `${process.env.REACT_APP_API_URL}/auth/register`,
-        formData,
+        {
+          ...formData,
+          phone: normalizedPhone,
+        },
         { headers: { "Content-Type": "application/json" } }
       );
       document.cookie = `token=${res.data.token}; path=/; max-age=31536000`;
@@ -122,29 +133,16 @@ const Register = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Phone
               </label>
-              <PhoneInput
-                country={"eg"}
+              <input
+                type="text"
+                name="phone"
                 value={formData.phone}
-                onChange={(phone) => setFormData({ ...formData, phone })}
-                inputProps={{
-                  name: "phone",
-                  required: true,
-                  autoFocus: true,
-                }}
-                placeholder="+201XXXXXXXXX"
-                enableAreaCodes={false}
-                countryCodeEditable={true}
-                inputStyle={{
-                  width: "100%",
-                  padding: "12px 45px",
-                  borderRadius: "6px",
-                  border: "1px solid #ccc",
-                }}
-                buttonStyle={{
-                  borderRight: "1px solid #ccc",
-                  backgroundColor: "#f9f9f9",
-                }}
-                specialLabel={null}
+                onChange={handleChange}
+                placeholder="012XXXXXXXX"
+                maxLength={11}
+                pattern="01[0-9]{9}"
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               />
             </div>
 

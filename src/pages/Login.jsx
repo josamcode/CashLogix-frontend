@@ -40,10 +40,10 @@ const Login = () => {
   };
 
   const validateForm = () => {
-    const phoneRegex = /^[0-9]{10,15}$/;
+    const phoneRegex = /^01[0-9]{9}$/;
     if (!phoneRegex.test(formData.phone)) {
       setError(
-        "Phone number is invalid. Must be an international number starting with '+'."
+        "Phone number is invalid. Must be an Egyptian number starting with 01 and 11 digits."
       );
       return false;
     }
@@ -99,23 +99,16 @@ const Login = () => {
             <label className="block mb-2 font-semibold text-gray-700">
               Phone
             </label>
-            <PhoneInput
-              country={"eg"}
+            <input
+              type="text"
+              name="phone"
               value={formData.phone}
-              onChange={handlePhoneChange}
-              inputProps={{ name: "phone", required: true, autoFocus: true }}
-              placeholder="+201XXXXXXXXX"
-              inputStyle={{
-                width: "100%",
-                padding: "12px 45px",
-                borderRadius: "6px",
-                border: "1px solid #ccc",
-              }}
-              buttonStyle={{
-                borderRight: "1px solid #ccc",
-                backgroundColor: "#f9f9f9",
-              }}
-              specialLabel={null}
+              onChange={handleChange}
+              placeholder="012XXXXXXXX"
+              maxLength={11}
+              pattern="01[0-9]{9}"
+              required
+              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
             />
           </div>
 
@@ -157,11 +150,10 @@ const Login = () => {
             <div className="flex gap-3">
               <label
                 className={`cursor-pointer flex items-center justify-center gap-3 px-5 py-3 rounded-lg border transition flex-1
-        ${
-          formData.role === "user"
-            ? "bg-blue-600 border-blue-600 text-white"
-            : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
-        }`}
+        ${formData.role === "user"
+                    ? "bg-blue-600 border-blue-600 text-white"
+                    : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
+                  }`}
               >
                 <input
                   type="radio"
@@ -176,11 +168,10 @@ const Login = () => {
 
               <label
                 className={`cursor-pointer flex items-center justify-center gap-3 px-5 py-3 rounded-lg border transition flex-1
-        ${
-          formData.role === "supervisor"
-            ? "bg-green-600 border-green-600 text-white"
-            : "border-gray-300 bg-white text-gray-700 hover:border-green-500"
-        }`}
+        ${formData.role === "supervisor"
+                    ? "bg-green-600 border-green-600 text-white"
+                    : "border-gray-300 bg-white text-gray-700 hover:border-green-500"
+                  }`}
               >
                 <input
                   type="radio"

@@ -18,17 +18,17 @@ CashLogix is a user-friendly expense management system that allows users to:
 
 ## 🔧 Technologies Used
 
-| Technology         | Description                           |
-|--------------------|----------------------------------------|
-| React              | JavaScript framework for UI           |
-| React Router       | Client-side routing                   |
-| Axios              | HTTP client for API calls             |
-| Tailwind CSS       | Utility-first CSS framework           |
-| Recharts           | Chart library for visual analytics    |
-| SweetAlert2        | Enhanced popup alerts                 |
-| Context API        | State management                      |
-| React-Select       | Custom select inputs with creatable options |
-| SWR / useEffect    | Data fetching and synchronization     |
+| Technology      | Description                                 |
+| --------------- | ------------------------------------------- |
+| React           | JavaScript framework for UI                 |
+| React Router    | Client-side routing                         |
+| Axios           | HTTP client for API calls                   |
+| Tailwind CSS    | Utility-first CSS framework                 |
+| Recharts        | Chart library for visual analytics          |
+| SweetAlert2     | Enhanced popup alerts                       |
+| Context API     | State management                            |
+| React-Select    | Custom select inputs with creatable options |
+| SWR / useEffect | Data fetching and synchronization           |
 
 ---
 
@@ -63,21 +63,25 @@ CashLogix is a user-friendly expense management system that allows users to:
 ## 🛠️ Setup Instructions
 
 1. Clone the repository:
+
    ```bash
    git clone <your-repo-url>
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Make sure your backend server is running on:
+
    ```
    http://localhost:5000
    ```
 
 4. Start the development server:
+
    ```bash
    npm start
    ```
@@ -93,20 +97,21 @@ CashLogix is a user-friendly expense management system that allows users to:
 
 ### 🖥️ User Interface
 
-| Page       | Description                             |
-|------------|------------------------------------------|
-| Home       | Introduction and marketing view          |
-| Login      | Role-based authentication                |
-| Register   | Create new account with auto-generated supervisor password |
-| Dashboard  | Add and manage expenses                  |
-| Profile    | View and edit personal expenses          |
-| Reports    | Visualize spending by category/month     |
+| Page      | Description                                                |
+| --------- | ---------------------------------------------------------- |
+| Home      | Introduction and marketing view                            |
+| Login     | Role-based authentication                                  |
+| Register  | Create new account with auto-generated supervisor password |
+| Dashboard | Add and manage expenses                                    |
+| Profile   | View and edit personal expenses                            |
+| Reports   | Visualize spending by category/month                       |
 
 ---
 
 ### 💰 Expense Management
 
 - Users can:
+
   - Add expenses with amount, category, description, and date
   - Edit or delete their own expenses
   - Filter by category and date range
@@ -169,6 +174,7 @@ CashLogix is a user-friendly expense management system that allows users to:
 ## 📄 Deployment
 
 To build for production:
+
 ```bash
 npm run build
 ```

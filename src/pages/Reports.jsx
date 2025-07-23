@@ -23,6 +23,7 @@ import {
 } from "@heroicons/react/24/outline";
 import getCookie from "../utils/getCookie";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 const COLORS = [
   "#0088FE",
@@ -99,6 +100,8 @@ const Reports = () => {
       } catch (err) {
         setError(err.response?.data?.message || "Something went wrong");
         setUser(null);
+        Cookies.remove("token");
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -229,11 +232,10 @@ const Reports = () => {
               <label
                 key={range}
                 className={`flex items-center cursor-pointer select-none rounded-md border px-3 py-2 transition
-        ${
-          filterRange === range
-            ? "bg-blue-600 border-blue-600 text-white"
-            : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
-        }`}
+        ${filterRange === range
+                    ? "bg-blue-600 border-blue-600 text-white"
+                    : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
+                  }`}
               >
                 <input
                   type="radio"
@@ -247,12 +249,12 @@ const Reports = () => {
                   {range === "day"
                     ? "Today"
                     : range === "month"
-                    ? "This Month"
-                    : range === "year"
-                    ? "This Year"
-                    : range === "all"
-                    ? "All Time"
-                    : "Custom Range"}
+                      ? "This Month"
+                      : range === "year"
+                        ? "This Year"
+                        : range === "all"
+                          ? "All Time"
+                          : "Custom Range"}
                 </span>
               </label>
             ))}

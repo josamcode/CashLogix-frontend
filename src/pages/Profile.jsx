@@ -9,6 +9,7 @@ import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import getCookie from "../utils/getCookie";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 const Profile = () => {
   const { token, loadingToken, logout } = useContext(AuthContext);
@@ -71,10 +72,10 @@ const Profile = () => {
         expenses: prev.expenses.map((exp) =>
           exp._id === editingExpenseId
             ? {
-                ...exp,
-                ...res.data.expense,
-                date: res.data.expense.date || exp.date,
-              }
+              ...exp,
+              ...res.data.expense,
+              date: res.data.expense.date || exp.date,
+            }
             : exp
         ),
       }));
@@ -218,6 +219,8 @@ const Profile = () => {
       } catch (err) {
         setError(err.response?.data?.message || "Something went wrong");
         setUser(null);
+        Cookies.remove("token");
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -326,9 +329,8 @@ const Profile = () => {
             </p>
             {percentChange !== null ? (
               <p
-                className={`mt-1 text-sm font-medium ${
-                  percentChange > 0 ? "text-green-600" : "text-red-600"
-                }`}
+                className={`mt-1 text-sm font-medium ${percentChange > 0 ? "text-green-600" : "text-red-600"
+                  }`}
               >
                 {percentChange > 0 ? "▲" : "▼"}{" "}
                 {Math.abs(percentChange).toFixed(1)}% compared to last month
@@ -384,11 +386,10 @@ const Profile = () => {
                   <label
                     key={range}
                     className={`flex items-center cursor-pointer select-none rounded-md border px-3 py-2 transition
-        ${
-          filterRange === range
-            ? "bg-blue-600 border-blue-600 text-white"
-            : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
-        }`}
+        ${filterRange === range
+                        ? "bg-blue-600 border-blue-600 text-white"
+                        : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -402,12 +403,12 @@ const Profile = () => {
                       {range === "day"
                         ? "Today"
                         : range === "month"
-                        ? "This Month"
-                        : range === "year"
-                        ? "This Year"
-                        : range === "all"
-                        ? "All Time"
-                        : "Custom Range"}
+                          ? "This Month"
+                          : range === "year"
+                            ? "This Year"
+                            : range === "all"
+                              ? "All Time"
+                              : "Custom Range"}
                     </span>
                   </label>
                 ))}
@@ -498,11 +499,10 @@ const Profile = () => {
                       <div className="space-y-2">
                         {/* Category */}
                         <span
-                          className={`block text-base font-semibold text-blue-600 ${
-                            /[\u0600-\u06FF]/.test(exp.category)
-                              ? "font-Rubik"
-                              : ""
-                          }`}
+                          className={`block text-base font-semibold text-blue-600 ${/[\u0600-\u06FF]/.test(exp.category)
+                            ? "font-Rubik"
+                            : ""
+                            }`}
                         >
                           {exp.category}
                         </span>
@@ -514,11 +514,10 @@ const Profile = () => {
 
                         {/* Description */}
                         <p
-                          className={`text-gray-700 text-sm line-clamp-2 ${
-                            /[\u0600-\u06FF]/.test(exp.description)
-                              ? "font-Rubik"
-                              : ""
-                          }`}
+                          className={`text-gray-700 text-sm line-clamp-2 ${/[\u0600-\u06FF]/.test(exp.description)
+                            ? "font-Rubik"
+                            : ""
+                            }`}
                         >
                           {exp.description}
                         </p>
@@ -545,11 +544,10 @@ const Profile = () => {
                               className="p-1 rounded hover:bg-red-200"
                             >
                               <TrashIcon
-                                className={`w-5 h-5 ${
-                                  loadingDelete === exp._id
-                                    ? "text-gray-400"
-                                    : "text-red-600"
-                                }`}
+                                className={`w-5 h-5 ${loadingDelete === exp._id
+                                  ? "text-gray-400"
+                                  : "text-red-600"
+                                  }`}
                               />
                             </button>
                           </div>
