@@ -1,15 +1,34 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 
-import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css";
+import { getMessaging, getToken } from "firebase/messaging";
+import { initializeApp } from "firebase/app";
+
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+};
+
+let messaging;
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+  messaging = getMessaging(app);
+} catch (error) {
+  console.log("Firebase not initialized in Login:", error);
+}
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const { login, token } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -20,6 +39,45 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const requestNotificationPermission = async (authToken) => {
+    try {
+      if (!messaging) {
+        console.log("Firebase messaging not available in Login");
+        return;
+      }
+
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+          console.log('Service Worker registered successfully in Login');
+        } catch (swError) {
+          console.log('Service Worker registration failed in Login:', swError);
+        }
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        const token = await getToken(messaging, {
+          vapidKey: process.env.REACT_APP_VAPID_PUBLIC_KEY,
+        });
+
+        await axios.post(
+          `${process.env.REACT_APP_API_URL}/save-fcm-token`,
+          { fcmToken: token },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${authToken}`
+            }
+          }
+        );
+        console.log("FCM Token saved successfully in Login");
+      }
+    } catch (err) {
+      console.error("Error getting FCM token in Login:", err);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -74,6 +132,9 @@ const Login = () => {
       }
 
       login(res.data.token);
+
+      await requestNotificationPermission(res.data.token);
+
       navigate("/home");
     } catch (err) {
       setError(err.response?.data?.message || "Error while login!");
@@ -81,6 +142,12 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, [token, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -104,7 +171,7 @@ const Login = () => {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              placeholder="012XXXXXXXX"
+              placeholder="01XXXXXXXXX"
               maxLength={11}
               pattern="01[0-9]{9}"
               required

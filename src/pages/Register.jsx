@@ -1,15 +1,35 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 import { AuthContext } from "../context/AuthContext";
 
-import "react-phone-input-2/lib/style.css";
-import PhoneInput from "react-phone-input-2";
+import { getMessaging, getToken } from "firebase/messaging";
+import { initializeApp } from "firebase/app";
+
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+};
+
+let messaging;
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+  messaging = getMessaging(app);
+} catch (error) {
+  console.log("Firebase not initialized:", error);
+}
 
 const Register = () => {
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const { login, token } = useContext(AuthContext);
+
   const [formData, setFormData] = useState({
     username: "",
     phone: "",
@@ -22,6 +42,45 @@ const Register = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const requestNotificationPermission = async (authToken) => {
+    try {
+      if (!messaging) {
+        console.log("Firebase messaging not available");
+        return;
+      }
+
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+          console.log('Service Worker registered successfully');
+        } catch (swError) {
+          console.log('Service Worker registration failed:', swError);
+        }
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        const token = await getToken(messaging, {
+          vapidKey: `${process.env.REACT_APP_VAPID_PUBLIC_KEY}`,
+        });
+
+        await axios.post(
+          `${process.env.REACT_APP_API_URL}/save-fcm-token`,
+          { fcmToken: token },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${authToken}`
+            }
+          }
+        );
+        console.log("FCM Token saved successfully");
+      }
+    } catch (err) {
+      console.error("Error getting FCM token:", err);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -80,17 +139,36 @@ const Register = () => {
         },
         { headers: { "Content-Type": "application/json" } }
       );
-      document.cookie = `token=${res.data.token}; path=/; max-age=31536000`;
-      login(res.data.token);
+
+      const token = res.data.token;
+
+      localStorage.setItem('token', token);
+
+      login(token);
+
       setGeneratedPassword2(res.data.result.password2);
       setSuccess("Registration successful!");
+
+      await requestNotificationPermission(token);
+
       setFormData({ username: "", phone: "", password: "", password2: "" });
+
     } catch (err) {
-      setError(err.response?.data?.err?.message || "Something went wrong");
+      const errorMessage = err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Something went wrong";
+      setError(errorMessage);
+      console.error("Registration error:", err);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, [token, navigate]);
 
   return (
     <div className="min-h-screen-minus-70 flex items-center justify-center bg-gray-100 p-4">
@@ -138,7 +216,7 @@ const Register = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="012XXXXXXXX"
+                placeholder="01XXXXXXXXX"
                 maxLength={11}
                 pattern="01[0-9]{9}"
                 required
@@ -198,12 +276,11 @@ const Register = () => {
           </form>
         )}
         <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{" "}
           <span
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/")}
             className="text-blue-600 hover:underline cursor-pointer font-medium"
           >
-            Log in
+            Home page
           </span>
         </p>
       </div>
