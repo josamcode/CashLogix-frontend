@@ -275,14 +275,27 @@ const Register = () => {
             </button>
           </form>
         )}
-        <p className="mt-4 text-center text-sm text-gray-600">
-          <span
-            onClick={() => navigate("/")}
-            className="text-blue-600 hover:underline cursor-pointer font-medium"
-          >
-            Home page
-          </span>
-        </p>
+        {!success ? (
+          <p className="mt-4 text-center text-sm text-gray-600">
+            I already have an account!{" "}
+            <span
+              onClick={() => navigate("/login")}
+              className="text-blue-600 hover:underline cursor-pointer font-medium"
+            >
+              Login
+            </span>
+          </p>
+        ) : (
+          <p className="mt-4 text-center text-sm text-gray-600">
+            Go back to{" "}
+            <span
+              onClick={() => navigate("/")}
+              className="text-green-600 hover:underline cursor-pointer font-medium"
+            >
+              Home Page
+            </span>
+          </p>
+        )}
       </div>
     </div>
   );
