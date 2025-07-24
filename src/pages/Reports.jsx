@@ -324,7 +324,7 @@ const Reports = () => {
             Expenses by Category
           </h3>
           {expensesByCategory.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={350}>
               <PieChart>
                 <Pie
                   dataKey="amount"
@@ -334,21 +334,20 @@ const Reports = () => {
                   cy="50%"
                   outerRadius={80}
                   label={(entry) =>
-                    `${entry.category} (${(
-                      (entry.amount / totalAmount) *
-                      100
-                    ).toFixed(1)}%)`
+                    `${entry.category} (${((entry.amount / totalAmount) * 100).toFixed(1)}%)`
                   }
                 >
                   {expensesByCategory.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <RechartsTooltip />
-                <Legend />
+                <Legend
+                  formatter={(value, entry, index) => {
+                    const category = expensesByCategory[index]?.category || "Unknown";
+                    return category;
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -362,7 +361,7 @@ const Reports = () => {
             Monthly Expenses (This Year)
           </h3>
           {expensesByMonth.some((d) => d.total > 0) ? (
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={350}>
               <LineChart data={expensesByMonth}>
                 <XAxis dataKey="month" />
                 <YAxis />
@@ -386,7 +385,7 @@ const Reports = () => {
             Expenses Amount by Category
           </h3>
           {barChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={350}>
               <BarChart data={barChartData}>
                 <XAxis dataKey="category" />
                 <YAxis />
