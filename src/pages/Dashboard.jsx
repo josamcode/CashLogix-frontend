@@ -9,6 +9,11 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Cookies from "js-cookie";
 
+function parseDateLocal(dateString) {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
 const Dashboard = () => {
   const { token, loadingToken } = useContext(AuthContext);
   const [user, setUser] = useState(null);
@@ -20,8 +25,16 @@ const Dashboard = () => {
     return [...new Set(user.expenses.map((e) => e.category))];
   }, [user]);
 
+  const projectsFromUser = useMemo(() => {
+    if (!user?.expenses) return [];
+    return [...new Set(user.expenses.map((e) => e.project).filter(p => p && p.trim() !== ""))];
+  }, [user]);
+
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+
+  const [isAddingProject, setIsAddingProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,6 +44,7 @@ const Dashboard = () => {
   const [newCategory, setNewCategory] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newDate, setNewDate] = useState("");
+  const [newProject, setNewProject] = useState("");
 
   // Loading state for expense creation
   const [creatingExpense, setCreatingExpense] = useState(false);
@@ -99,38 +113,53 @@ const Dashboard = () => {
     e.preventDefault();
     setCreateError(null);
     setCreateSuccess(null);
-
     if (!newAmount || !newCategory) {
       setCreateError("Amount and category are required.");
       return;
     }
-
     setCreatingExpense(true);
 
+    const selectedDate = newDate ? parseDateLocal(newDate) : new Date();
+    selectedDate.setHours(0, 0, 0, 0);
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    if (selectedDate > now) {
+      setCreateError("Future dates are not allowed. Please select today or a past date.");
+      setCreatingExpense(false);
+      return;
+    }
+
     try {
+      const expenseData = {
+        amount: Number(newAmount),
+        category: newCategory,
+        description: newDescription,
+        ...(newProject && { project: newProject }),
+        date: newDate || undefined,
+      };
+
       const res = await axios.post(
         `${process.env.REACT_APP_API_URL}/expenses`,
-        {
-          amount: Number(newAmount),
-          category: newCategory,
-          description: newDescription,
-          date: newDate || undefined,
-        },
+        expenseData,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       setUser((prevUser) => ({
         ...prevUser,
         expenses: [...prevUser.expenses, res.data.result],
       }));
-
       setCreateSuccess("Expense created successfully.");
       setNewAmount("");
       setNewCategory("");
       setNewDescription("");
+      setNewProject("");
       setNewDate("");
+      setNewProject("");
+      setIsAddingProject(false);
+      setNewProjectName("");
     } catch (err) {
       setCreateError(
         err.response?.data?.message || "Failed to create expense."
@@ -159,6 +188,12 @@ const Dashboard = () => {
             onSubmit={handleCreateExpense}
             className="mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 sm:bg-blue-50"
           >
+            {createError && (
+              <div className="mb-4 text-red-600 font-semibold">
+                {createError}
+              </div>
+            )}
+
             <h3 className="text-xl sm:text-2xl font-semibold mb-6 text-gray-800">
               Add New Expense
             </h3>
@@ -172,7 +207,7 @@ const Dashboard = () => {
                 <input
                   type="number"
                   min="1"
-                  step="1"
+                  step="0.1"
                   value={newAmount}
                   onChange={(e) => setNewAmount(e.target.value)}
                   required
@@ -237,30 +272,82 @@ const Dashboard = () => {
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-end sm:gap-4 gap-1 sm:col-span-2">
-                {/* Date Picker */}
-                <div className="flex-1 flex flex-col gap-1">
-                  <label className="text-sm text-gray-600 font-medium">
-                    Date
-                  </label>
-                  <DatePicker
-                    selected={newDate ? new Date(newDate) : null}
-                    onChange={(date) =>
-                      setNewDate(date?.toISOString().split("T")[0] || "")
+              {/* Date Picker */}
+              <div className="flex-1 flex flex-col gap-1">
+                <label className="text-sm text-gray-600 font-medium">
+                  Date
+                </label>
+                <DatePicker
+                  selected={newDate ? new Date(newDate) : null}
+                  onChange={(date) => {
+                    if (date) {
+                      const localDate = new Date(date);
+                      localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+                      setNewDate(localDate.toISOString().split("T")[0]);
+                    } else {
+                      setNewDate("");
                     }
-                    dateFormat="yyyy-MM-dd"
-                    minDate={oneMonthAgo}
-                    maxDate={today}
-                    placeholderText="Pick a date (optional, today if left empty)"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
-                    showPopperArrow={false}
-                  />
-                </div>
+                  }}
+                  dateFormat="yyyy-MM-dd"
+                  minDate={oneMonthAgo}
+                  // maxDate={today}
+                  placeholderText="Pick a date (optional, today if left empty)"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
+                  showPopperArrow={false}
+                />
+              </div>
 
-                {/* Hint */}
-                <p className="text-xs text-gray-500 italic sm:mb-1 sm:mt-auto hidden sm:block flex-1">
-                  If left empty, today's date will be used.
-                </p>
+              {/* Project Select/Input */}
+              <div className="flex flex-col gap-1 sm:col-span-1">
+                <label className="text-sm text-gray-600 font-medium">
+                  Project (optional)
+                </label>
+                {!isAddingProject ? (
+                  <select
+                    value={newProject}
+                    onChange={(e) => {
+                      if (e.target.value === "__add_new_project__") {
+                        setIsAddingProject(true);
+                        setNewProject(""); // Clear the selection
+                      } else {
+                        setNewProject(e.target.value); // Select existing project
+                      }
+                    }}
+                    className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
+                  >
+                    <option value="">Select Project (optional)</option>
+                    {projectsFromUser.map((proj) => (
+                      <option key={proj} value={proj}>
+                        {proj}
+                      </option>
+                    ))}
+                    <option value="__add_new_project__">+ Add New Project</option>
+                  </select>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter new project"
+                      value={newProjectName}
+                      onChange={(e) => {
+                        setNewProjectName(e.target.value);
+                        setNewProject(e.target.value);
+                      }}
+                      className="flex-grow border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingProject(false);
+                        setNewProject("");
+                        setNewProjectName("");
+                      }}
+                      className="text-red-500 hover:text-red-700 font-medium text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Description */}
