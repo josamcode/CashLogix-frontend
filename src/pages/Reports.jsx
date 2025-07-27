@@ -696,7 +696,7 @@ const Reports = () => {
         </div>
 
         {/* Charts Section */}
-        <div className="px-6 py-6 sm:px-8 sm:py-8 direction-ltr">
+        <div className="px-6 py-6 sm:px-8 sm:py-8" dir="ltr">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             {/* Pie Chart - Expenses by Category */}
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
