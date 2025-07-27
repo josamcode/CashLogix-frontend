@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'; // Added import
 import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +28,7 @@ try {
 }
 
 const Login = () => {
+  const { t } = useTranslation(); // Added hook
   const navigate = useNavigate();
   const { login, token } = useContext(AuthContext);
 
@@ -101,12 +103,12 @@ const Login = () => {
     const phoneRegex = /^01[0-9]{9}$/;
     if (!phoneRegex.test(formData.phone)) {
       setError(
-        "Phone number is invalid. Must be an Egyptian number starting with 01 and 11 digits."
+        t("error_invalid_phone_format") // Translated error
       );
       return false;
     }
     if (!formData.password || formData.password.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError(t("error_password_min_length")); // Translated error
       return false;
     }
     return true;
@@ -137,7 +139,7 @@ const Login = () => {
 
       navigate("/home");
     } catch (err) {
-      setError(err.response?.data?.message || "Error while login!");
+      setError(err.response?.data?.message || t("error_login_generic")); // Translated error
     } finally {
       setLoading(false);
     }
@@ -153,7 +155,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="max-w-md w-full bg-white shadow-lg rounded-xl p-8">
         <h2 className="text-3xl font-bold mb-8 text-center text-gray-900">
-          Welcome Back 👋
+          {t('welcome_back')}
         </h2>
 
         {error && (
@@ -164,14 +166,14 @@ const Login = () => {
           {/* Phone */}
           <div className="mb-4">
             <label className="block mb-2 font-semibold text-gray-700">
-              Phone
+              {t("phone")}
             </label>
             <input
               type="text"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              placeholder="01XXXXXXXXX"
+              placeholder={t("placeholder_phone")}
               maxLength={11}
               pattern="01[0-9]{9}"
               required
@@ -182,14 +184,14 @@ const Login = () => {
           {/* Password with eye icon */}
           <div>
             <label className="block mb-2 font-semibold text-gray-700">
-              Password
+              {t("password")}
             </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
-                placeholder="********"
+                placeholder={t("placeholder_password")}
                 onChange={handleChange}
                 required
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -198,7 +200,7 @@ const Login = () => {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? t("aria_hide_password") : t("aria_show_password")} // Translated aria-label
               >
                 {showPassword ? (
                   <EyeSlashIcon className="h-6 w-6" />
@@ -212,7 +214,7 @@ const Login = () => {
           {/* Role selection modern */}
           <div>
             <span className="block mb-3 font-semibold text-gray-700">
-              Select Role
+              {t("select_role")}
             </span>
             <div className="flex gap-3">
               <label
@@ -230,7 +232,7 @@ const Login = () => {
                   onChange={handleRoleChange}
                   className="hidden"
                 />
-                <span className="font-medium text-lg">User</span>
+                <span className="font-medium text-lg">{t("user")}</span>
               </label>
 
               <label
@@ -248,7 +250,7 @@ const Login = () => {
                   onChange={handleRoleChange}
                   className="hidden"
                 />
-                <span className="font-medium text-lg">Supervisor</span>
+                <span className="font-medium text-lg">{t("supervisor")}</span>
               </label>
             </div>
           </div>
@@ -259,16 +261,16 @@ const Login = () => {
             disabled={loading}
             className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-900 transition"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? t("logging_in") : t("login")} {/* Translated button text */}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
-          You don't have an account?{" "}
+          {t("no_account_prompt")}{" "}
           <span
             onClick={() => navigate("/register")}
             className="text-blue-600 hover:underline cursor-pointer font-medium"
           >
-            Create one
+            {t("create_one")}
           </span>
         </p>
       </div>

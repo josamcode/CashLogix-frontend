@@ -1,9 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 import { AuthContext } from "../context/AuthContext";
-
 import { getMessaging, getToken } from "firebase/messaging";
 import { initializeApp } from "firebase/app";
 
@@ -27,6 +27,7 @@ try {
 }
 
 const Register = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login, token } = useContext(AuthContext);
 
@@ -35,6 +36,7 @@ const Register = () => {
     phone: "",
     password: "",
     password2: "",
+    usertype: "user"
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -49,7 +51,6 @@ const Register = () => {
         console.log("Firebase messaging not available");
         return;
       }
-
       if ('serviceWorker' in navigator) {
         try {
           await navigator.serviceWorker.register('/firebase-messaging-sw.js');
@@ -58,13 +59,11 @@ const Register = () => {
           console.log('Service Worker registration failed:', swError);
         }
       }
-
       const permission = await Notification.requestPermission();
       if (permission === "granted") {
         const token = await getToken(messaging, {
           vapidKey: `${process.env.REACT_APP_VAPID_PUBLIC_KEY}`,
         });
-
         await axios.post(
           `${process.env.REACT_APP_API_URL}/save-fcm-token`,
           { fcmToken: token },
@@ -86,27 +85,29 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleTypeChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      usertype: e.target.value,
+    }));
+  };
+
   const validateForm = () => {
     let phone = formData.phone;
     phone = normalizeEgyptPhone(phone);
-
     const phoneRegex = /^01[0-9]{9}$/;
-
     if (!phoneRegex.test(phone)) {
-      setError("Phone number is invalid. Must be an Egyptian number starting with 01 and 11 digits.");
+      setError(t("error_invalid_phone_format"));
       return false;
     }
-
     if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError(t("error_password_min_length"));
       return false;
     }
-
     if (formData.username.length < 8) {
-      setError("Username must be at least 8 characters.");
+      setError(t("error_username_min_length"));
       return false;
     }
-
     return true;
   };
 
@@ -129,7 +130,6 @@ const Register = () => {
     }
 
     const normalizedPhone = normalizeEgyptPhone(formData.phone);
-
     try {
       const res = await axios.post(
         `${process.env.REACT_APP_API_URL}/auth/register`,
@@ -139,24 +139,16 @@ const Register = () => {
         },
         { headers: { "Content-Type": "application/json" } }
       );
-
       const token = res.data.token;
-
-      localStorage.setItem('token', token);
-
       login(token);
-
       setGeneratedPassword2(res.data.result.password2);
-      setSuccess("Registration successful!");
-
+      setSuccess(t("success_registration"));
       await requestNotificationPermission(token);
-
-      setFormData({ username: "", phone: "", password: "", password2: "" });
-
+      setFormData({ username: "", phone: "", password: "", password2: "", usertype: "" });
     } catch (err) {
       const errorMessage = err.response?.data?.error ||
         err.response?.data?.message ||
-        "Something went wrong";
+        t("error_generic");
       setError(errorMessage);
       console.error("Registration error:", err);
     } finally {
@@ -174,66 +166,61 @@ const Register = () => {
     <div className="min-h-screen-minus-70 flex items-center justify-center bg-gray-100 p-4">
       <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
         <h2 className="text-3xl font-bold mb-8 text-center text-gray-900">
-          Register to CashLogix ❤️
+          {t("register_to_cashlogix")}
         </h2>
-
         {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
-
         {success ? (
           <div className="bg-green-100 text-green-800 p-3 rounded text-sm mb-3">
             {success}
             <br />
-            <strong>Password2:</strong>{" "}
+            <strong>{t("password2_label")}:</strong>{" "}
             <span className="text-red-700">{generatedPassword2}</span> <br />
             <span className="text-xs">
-              * Your supervisor should login using this password{" "}
-              {generatedPassword2} and choose role "supervisor".
+              {t("supervisor_login_info")}
             </span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Full name
+                {t("full_name")}
               </label>
               <input
                 type="text"
                 name="username"
                 value={formData.username}
-                placeholder="Enter your full name"
+                placeholder={t("placeholder_full_name")}
                 onChange={handleChange}
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                 required
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone
+                {t("phone")}
               </label>
               <input
                 type="text"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="01XXXXXXXXX"
+                placeholder={t("placeholder_phone")}
                 maxLength={11}
                 pattern="01[0-9]{9}"
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Password
+                {t("password")}
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
-                  placeholder="********"
+                  placeholder={t("placeholder_password")}
                   onChange={handleChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md p-2 pr-10"
                   required
@@ -242,6 +229,7 @@ const Register = () => {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+                  aria-label={showPassword ? t("aria_hide_password") : t("aria_show_password")}
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />
@@ -251,10 +239,9 @@ const Register = () => {
                 </button>
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Password 2 (Optional)
+                {t("password2_optional")}
               </label>
               <input
                 type="text"
@@ -262,37 +249,77 @@ const Register = () => {
                 value={formData.password2}
                 onChange={handleChange}
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                placeholder="Leave empty to auto-generate"
+                placeholder={t("placeholder_password2")}
               />
             </div>
-
+            <div>
+              <span className="block mb-3 font-semibold text-gray-700">
+                {t("select_your_role")}
+              </span>
+              <div className="flex gap-3">
+                <label
+                  className={`cursor-pointer flex items-center justify-center gap-3 px-5 py-3 rounded-lg border transition flex-1
+        ${formData.usertype === "user"
+                      ? "bg-blue-600 border-blue-600 text-white"
+                      : "border-gray-300 bg-white text-gray-700 hover:border-blue-500"
+                    }`}
+                >
+                  <input
+                    type="radio"
+                    name="usertype"
+                    value="user"
+                    checked={formData.usertype === "user"}
+                    onChange={handleTypeChange}
+                    className="hidden"
+                  />
+                  <span className="font-medium text-lg">{t("user")}</span>
+                </label>
+                <label
+                  className={`cursor-pointer flex items-center justify-center gap-3 px-5 py-3 rounded-lg border transition flex-1
+        ${formData.usertype === "entrepreneur"
+                      ? "bg-green-600 border-green-600 text-white"
+                      : "border-gray-300 bg-white text-gray-700 hover:border-green-500"
+                    }`}
+                >
+                  <input
+                    type="radio"
+                    name="usertype"
+                    value="entrepreneur"
+                    checked={formData.usertype === "entrepreneur"}
+                    onChange={handleTypeChange}
+                    className="hidden"
+                  />
+                  <span className="font-medium text-lg">{t("entrepreneur")}</span>
+                </label>
+              </div>
+            </div>
             <button
               type="submit"
               disabled={loading}
               className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition"
             >
-              {loading ? "Registering..." : "Register"}
+              {loading ? t("registering") : t("register")}
             </button>
           </form>
         )}
         {!success ? (
           <p className="mt-4 text-center text-sm text-gray-600">
-            I already have an account!{" "}
+            {t("already_have_account_prompt")}{" "}
             <span
               onClick={() => navigate("/login")}
               className="text-blue-600 hover:underline cursor-pointer font-medium"
             >
-              Login
+              {t("login")}
             </span>
           </p>
         ) : (
           <p className="mt-4 text-center text-sm text-gray-600">
-            Go back to{" "}
+            {t("go_back_to")}{" "}
             <span
               onClick={() => navigate("/")}
               className="text-green-600 hover:underline cursor-pointer font-medium"
             >
-              Home Page
+              {t("home_page")}
             </span>
           </p>
         )}

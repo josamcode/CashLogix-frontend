@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next'; // Added import for useTranslation
 import { useContext, useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
 const Home = () => {
+  const { t } = useTranslation(); // Added useTranslation hook
   const { token, loadingToken } = useContext(AuthContext);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,6 @@ const Home = () => {
       setLoading(false);
       return;
     }
-
     const fetchUser = async () => {
       try {
         const res = await axios.get(
@@ -26,18 +27,16 @@ const Home = () => {
         );
         setUser(res.data.user);
         setError(null);
-
         navigate("/dashboard");
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to load user data.");
+        setError(err.response?.data?.message || t("error_load_user_data")); // Translated error message
         setUser(null);
       } finally {
         setLoading(false);
       }
     };
-
     fetchUser();
-  }, [token, loadingToken]);
+  }, [token, loadingToken, t, navigate]); // Added t and navigate to dependency array
 
   const totalMonthly = useMemo(() => {
     if (!user?.expenses) return 0;
@@ -57,13 +56,10 @@ const Home = () => {
   }, [user]);
 
   if (loading || loadingToken)
-    return <div className="p-10 text-center text-gray-500">Loading...</div>;
-
+    return <div className="p-10 text-center text-gray-500">{t("loading")}</div>; {/* Translated loading text */ }
   if (error)
     return <div className="p-10 text-center text-red-500">{error}</div>;
-
-  if (error)
-    return <div className="p-10 text-center text-red-500">{error}</div>;
+  // Removed duplicate error check
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gray-50 text-gray-800">
@@ -82,29 +78,31 @@ const Home = () => {
           >
             <div className="relative z-10 max-w-7xl mx-auto">
               <h1 className="text-6xl font-extrabold leading-tight mb-4 drop-shadow-lg">
+                {/* Translated welcome message */}
                 {user
-                  ? `Welcome back, ${user?.username.split(" ")[0]}!`
-                  : "Welcome to CashLogix!"}
+                  ? `${t("welcome_back")}, ${user?.username.split(" ")[0]}!`
+                  : t("welcome_to_cashlogix")}
               </h1>
-
               <p className="text-xl mb-8 max-w-3xl mx-auto drop-shadow-md">
-                Effortlessly track your expenses, analyze your financial habits,
-                and achieve your money goals with confidence.
+                {/* Translated hero description */}
+                {t("hero_description")}
               </p>
               <div className="flex justify-center gap-6 flex-wrap">
                 <Link
                   to="/dashboard"
                   className="bg-white text-blue-700 font-semibold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition transform hover:-translate-y-1"
-                  aria-label="Go to Dashboard"
+                  aria-label={t("aria_label_go_to_dashboard")}
                 >
-                  Go to Dashboard
+                  {/* Translated button text */}
+                  {t("go_to_dashboard")}
                 </Link>
                 <Link
                   to="/reports"
                   className="border border-white text-white font-semibold px-8 py-4 rounded-lg hover:bg-white hover:text-blue-700 transition transform hover:-translate-y-1"
-                  aria-label="View Reports"
+                  aria-label={t("aria_label_view_reports")} 
                 >
-                  View Reports
+                  {/* Translated button text */}
+                  {t("view_reports")}
                 </Link>
               </div>
             </div>
@@ -114,19 +112,17 @@ const Home = () => {
               style={{ mixBlendMode: "multiply" }}
             />
           </section>
-
           <section className="py-20 px-6 max-w-7xl mx-auto text-center">
             <h2 className="text-4xl font-bold mb-6 text-gray-900">
-              Why Choose Us?
+              {/* Translated section title */}
+              {t("why_choose_us")}
             </h2>
             <p className="text-lg max-w-4xl mx-auto mb-16 text-gray-600 leading-relaxed">
-              Our expense tracker is designed to give you clear insights into
-              your spending, help you budget better, and save more. With a
-              user-friendly interface and powerful analytics, managing your
-              finances has never been easier.
+              {/* Translated section description */}
+              {t("why_choose_us_description")}
             </p>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto">
+              {/* Translated feature cards */}
               {[
                 {
                   icon: (
@@ -145,8 +141,8 @@ const Home = () => {
                       />
                     </svg>
                   ),
-                  title: "Simple & Intuitive",
-                  desc: "User-friendly design that makes tracking expenses effortless.",
+                  title: t("feature_simple_title"),
+                  desc: t("feature_simple_desc"),
                 },
                 {
                   icon: (
@@ -165,8 +161,8 @@ const Home = () => {
                       />
                     </svg>
                   ),
-                  title: "Detailed Reports",
-                  desc: "Analyze your spending with clear, visual reports and graphs.",
+                  title: t("feature_detailed_reports_title"),
+                  desc: t("feature_detailed_reports_desc"),
                 },
                 {
                   icon: (
@@ -190,8 +186,8 @@ const Home = () => {
                       />
                     </svg>
                   ),
-                  title: "Secure & Private",
-                  desc: "Your data is protected with the highest security standards.",
+                  title: t("feature_secure_title"),
+                  desc: t("feature_secure_desc"),
                 },
               ].map(({ icon, title, desc }, i) => (
                 <div
@@ -210,22 +206,22 @@ const Home = () => {
           </section>
         </>
       )}
-
       {/* Quick Links Cards Section */}
       <section
-        className={`bg-gray-100 ${
-          user ? "min-h-screen flex items-center" : "py-20"
-        }`}
+        className={`bg-gray-100 ${user ? "min-h-screen flex items-center" : "py-20"
+          }`}
       >
         <div className={`max-w-7xl mx-auto px-6 text-center flex-grow`}>
           <h2 className="text-4xl font-bold mb-10 text-gray-900">
-            Quick Access
+            {/* Translated section title */}
+            {t("quick_access")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
+            {/* Translated quick links */}
             {[
               {
-                title: "Dashboard",
-                desc: "Your expense overview & stats",
+                title: t("dashboard"),
+                desc: t("quick_access_dashboard_desc"),
                 to: "/dashboard",
                 color: "blue",
                 icon: (
@@ -251,8 +247,8 @@ const Home = () => {
                 ),
               },
               {
-                title: "Reports",
-                desc: "Analyze your financial data",
+                title: t("reports"),
+                desc: t("quick_access_reports_desc"),
                 to: "/reports",
                 color: "green",
                 icon: (
@@ -273,8 +269,8 @@ const Home = () => {
                 ),
               },
               {
-                title: "Profile",
-                desc: "Manage your account details",
+                title: t("my_profile"),
+                desc: t("quick_access_profile_desc"),
                 to: "/profile",
                 color: "gray",
                 icon: (
@@ -309,7 +305,7 @@ const Home = () => {
                 key={i}
                 to={to}
                 className={`bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2 cursor-pointer border-2 border-transparent hover:border-${color}-500 flex flex-col items-center`}
-                aria-label={title}
+                aria-label={title} // Translated aria label
               >
                 {icon}
                 <h3 className="text-2xl font-semibold mb-2 text-gray-900">
@@ -321,12 +317,10 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* Testimonials Section */}
       {!user && (
         <section className="py-20 max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-4xl font-bold mb-12 text-gray-900">
-            What Our Users Say
+            {t("what_our_users_say")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[

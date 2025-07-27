@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'; // Added import
 import { useEffect, useState, useContext, useMemo } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
@@ -12,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
 const Profile = () => {
+  const { t } = useTranslation()
   const { token, loadingToken, logout } = useContext(AuthContext);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,14 +40,21 @@ const Profile = () => {
     const d = new Date(date);
     const day = d.getDay();
     const diff = d.getDate() - day;
-    return new Date(d.setDate(diff));
+    const startOfWeek = new Date(d.getFullYear(), d.getMonth(), diff, 0, 0, 0, 0);
+
+    if (day === 0) {
+      startOfWeek.setDate(startOfWeek.getDate() - 7);
+    }
+
+    return startOfWeek;
   };
 
   const getEndOfWeek = (date) => {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() + (6 - day);
-    return new Date(d.setDate(diff));
+    const startOfWeek = getStartOfWeek(date);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+    return endOfWeek;
   };
 
   const handleStartEdit = (exp) => {
@@ -96,7 +105,7 @@ const Profile = () => {
       }));
       setEditingExpenseId(null);
     } catch (err) {
-      setEditError(err.response?.data?.message || "Failed to update expense.");
+      setEditError(err.response?.data?.message || t("error_update_expense")); // Translated error
     } finally {
       setLoadingEdit(false);
     }
@@ -104,42 +113,45 @@ const Profile = () => {
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This expense will be deleted permanently.",
+      title: t("delete_confirm_title"), // Translated title
+      text: t("delete_confirm_text"), // Translated text
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#EF4444",
       cancelButtonColor: "#6B7280",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("yes_delete_it"), // Translated button text
+      cancelButtonText: t("cancel"), // Translated button text
     });
+
     if (!result.isConfirmed) return;
+
     setDeleteError(null);
     setLoadingDelete(id);
+
     try {
       await axios.delete(`${process.env.REACT_APP_API_URL}/expenses/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setUser((prev) => ({
         ...prev,
         expenses: prev.expenses.filter((exp) => exp._id !== id),
       }));
+
       Swal.fire({
-        title: "Deleted!",
-        text: "Expense has been deleted.",
+        title: t("deleted"), // Translated title
+        text: t("expense_deleted"), // Translated text
         icon: "success",
         timer: 1500,
         showConfirmButton: false,
       });
     } catch (err) {
-      setDeleteError(
-        err.response?.data?.message || "Failed to delete expense."
-      );
+      const errorMsg = err.response?.data?.message || t("error_delete_expense"); // Translated error
+      setDeleteError(errorMsg);
+
       Swal.fire({
-        title: "Error!",
-        text:
-          err.response?.data?.message ||
-          "Something went wrong during deletion.",
+        title: t("error"), // Translated title
+        text: errorMsg,
         icon: "error",
       });
     } finally {
@@ -149,19 +161,19 @@ const Profile = () => {
 
   const handleLogout = () => {
     Swal.fire({
-      title: "Are you sure?",
-      text: "Do you want to log out?",
+      title: t("logout_confirm_title"),
+      text: t("logout_confirm_text"),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#EF4444",
       cancelButtonColor: "#3B82F6",
-      confirmButtonText: "Yes, log me out",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("yes_logout"),
+      cancelButtonText: t("cancel"),
     }).then((result) => {
       if (result.isConfirmed) {
         logout();
         navigate("/login");
-        Swal.fire("Logged out!", "You have been logged out.", "success");
+        Swal.fire(t("logged_out"), t("you_have_been_logged_out"), "success");
       }
     });
   };
@@ -217,6 +229,7 @@ const Profile = () => {
       return;
     }
     if (loadingToken || !token) return;
+
     const fetchUser = async () => {
       try {
         const res = await axios.get(
@@ -228,18 +241,21 @@ const Profile = () => {
           }
         );
         setUser(res.data.user);
+        console.log(res.data.user);
+
         setError(null);
       } catch (err) {
-        setError(err.response?.data?.message || "Something went wrong");
+        setError(err.response?.data?.message || t("error_generic"));
         setUser(null);
         Cookies.remove("token");
-        navigate("/login");
+        window.location.reload();
       } finally {
         setLoading(false);
       }
     };
+
     fetchUser();
-  }, [token, loadingToken, navigate]);
+  }, [token, loadingToken, navigate, t]);
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -306,8 +322,8 @@ const Profile = () => {
         <div className="px-6 py-5 sm:px-8 sm:py-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">MY Profile</h2>
-              <p className="mt-1 text-sm text-gray-500">Manage your account and expenses.</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("my_profile")}</h2>
+              <p className="mt-1 text-sm text-gray-500">{t("manage_account_expenses")}</p>
             </div>
             <button
               type="button"
@@ -315,11 +331,10 @@ const Profile = () => {
               className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 active:bg-red-800 transition shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             >
               <ArrowRightOnRectangleIcon className="w-5 h-5" />
-              Logout
+              {t("logout")}
             </button>
           </div>
         </div>
-
         <div className="px-6 py-6 sm:px-8 sm:py-8 border-b border-gray-200 bg-gray-50">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <div className="flex items-center gap-4">
@@ -330,59 +345,56 @@ const Profile = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full sm:w-auto">
               <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Phone</p>
-                <p className="font-medium text-gray-900 mt-1">{user.phone || "N/A"}</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{t("phone")}</p>
+                <p className="font-medium text-gray-900 mt-1">{user.phone || t("na")}</p>
               </div>
               <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Supervisor Password</p>
-                <p className="font-medium text-gray-900 mt-1">{user.password2 || "N/A"}</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{t("supervisor_password")}</p>
+                <p className="font-medium text-gray-900 mt-1">{user.password2 || t("na")}</p>
               </div>
             </div>
           </div>
         </div>
-
         <div className="px-6 py-6 sm:px-8 sm:py-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 shadow-sm border border-blue-100">
-              <p className="text-sm font-medium text-blue-800 mb-1">Total Expenses This Month</p>
+              <p className="text-sm font-medium text-blue-800 mb-1">{t("total_expenses_this_month")}</p>
               <p className="text-2xl font-bold text-blue-900">
-                EGP {totalMonthlyAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {user.currency || "EGP"} {totalMonthlyAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               {totalPrevMonth === 0 && totalMonthlyAmount > 0 ? (
                 <p className="mt-2 text-sm font-medium text-green-600">
-                  ▲ 100.0% compared to last month
-                  <span className="text-xs text-gray-600 ml-2">(EGP {totalPrevMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
+                  ▲ 100.0% {t("compared_to_last_month")}
+                  <span className="text-xs text-gray-600 ml-2">({user.currency || "EGP"} {totalPrevMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
                 </p>
               ) : percentChange !== null ? (
                 // Show normal percentage change if both months have data
                 <p className={`mt-2 text-sm font-medium ${percentChange > 0 ? "text-green-600" : "text-red-600"}`}>
-                  {percentChange > 0 ? "▲" : "▼"} {Math.abs(percentChange).toFixed(1)}% compared to last month
-                  <span className="block text-xs text-gray-600 mt-1">(EGP {totalPrevMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
+                  {percentChange > 0 ? "▲" : "▼"} {Math.abs(percentChange).toFixed(1)}% {t("compared_to_last_month")}
+                  <span className="block text-xs text-gray-600 mt-1">({user.currency || "EGP"} {totalPrevMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
                 </p>
               ) : (
                 // Show message only if there's truly no data for comparison (e.g., new user, no expenses ever)
                 <p className="mt-2 text-sm text-gray-500">
-                  No data for last month to compare.
+                  {t("no_data_last_month")}
                 </p>
               )}
             </div>
             <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 shadow-sm border border-green-100">
-              <p className="text-sm font-medium text-green-800 mb-1">All-Time Total</p>
+              <p className="text-sm font-medium text-green-800 mb-1">{t("all_time_total")}</p>
               <p className="text-2xl font-bold text-green-900">
-                EGP {totalAllExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {user.currency || "EGP"} {totalAllExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
           </div>
         </div>
-
         <div className="px-6 py-6 sm:px-8 sm:py-8 bg-gray-50">
-          <h3 className="text-xl font-semibold text-gray-900 mb-6">Recent Expenses</h3>
-
+          <h3 className="text-xl font-semibold text-gray-900 mb-6">{t("recent_expenses")}</h3>
           <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex flex-col w-full md:w-auto min-w-[180px]">
                 <label htmlFor="profile-category-select" className="mb-1 text-sm font-medium text-gray-700">
-                  Filter by Category
+                  {t("filter_by_category")}
                 </label>
                 <select
                   id="profile-category-select"
@@ -390,7 +402,7 @@ const Profile = () => {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="border border-gray-300 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
                 >
-                  <option value="all">All Categories</option>
+                  <option value="all">{t("all_categories")}</option>
                   {[...new Set(user?.expenses?.map((e) => e.category) || [])].map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
@@ -398,30 +410,30 @@ const Profile = () => {
                   ))}
                 </select>
               </div>
-
-              <div className="flex flex-col w-full md:w-auto min-w-[180px]">
-                <label htmlFor="profile-project-select" className="mb-1 text-sm font-medium text-gray-700">
-                  Filter by Project
-                </label>
-                <select
-                  id="profile-project-select"
-                  value={selectedProject}
-                  onChange={(e) => setSelectedProject(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
-                >
-                  <option value="all">All Projects</option>
-                  {[...new Set(user?.expenses?.map((e) => e.project).filter(p => p) || [])].map((proj) => (
-                    <option key={proj} value={proj}>
-                      {proj}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {(usertypeFromCookie === "entrepreneur" || user.usertype === "entrepreneur") && ( // Fixed conditional logic
+                <div className="flex flex-col w-full md:w-auto min-w-[180px]">
+                  <label htmlFor="profile-project-select" className="mb-1 text-sm font-medium text-gray-700">
+                    {t("filter_by_project")}
+                  </label>
+                  <select
+                    id="profile-project-select"
+                    value={selectedProject}
+                    onChange={(e) => setSelectedProject(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
+                  >
+                    <option value="all">{t("all_projects")}</option> {/* Translated option */}
+                    {[...new Set(user?.expenses?.map((e) => e.project).filter(p => p) || [])].map((proj) => (
+                      <option key={proj} value={proj}>
+                        {proj}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
-
             <div className="flex flex-col w-full md:w-auto min-w-[280px]">
               <label className="mb-1 text-sm font-medium text-gray-700">
-                Filter by Date Range
+                {t("filter_by_date_range")}
               </label>
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 {["day", "week", "month", "year", "all", "custom"].map((range) => (
@@ -442,17 +454,18 @@ const Profile = () => {
                       className="sr-only"
                     />
                     <span className="capitalize">
+                      {/* Translated range labels */}
                       {range === "day"
-                        ? "Today"
+                        ? t("today")
                         : range === "week"
-                          ? "This Week"
+                          ? t("this_week")
                           : range === "month"
-                            ? "This Month"
+                            ? t("this_month")
                             : range === "year"
-                              ? "This Year"
+                              ? t("this_year")
                               : range === "all"
-                                ? "All Time"
-                                : "Custom"}
+                                ? t("all_time")
+                                : t("custom")}
                     </span>
                   </label>
                 ))}
@@ -460,7 +473,7 @@ const Profile = () => {
               {filterRange === "custom" && (
                 <div className="flex flex-col sm:flex-row gap-4 mt-3">
                   <div className="flex flex-col w-full">
-                    <label htmlFor="profile-start-date" className="mb-1 text-xs text-gray-600">Start Date</label>
+                    <label htmlFor="profile-start-date" className="mb-1 text-xs text-gray-600">{t("start_date")}</label>
                     <input
                       id="profile-start-date"
                       type="date"
@@ -470,7 +483,7 @@ const Profile = () => {
                     />
                   </div>
                   <div className="flex flex-col w-full">
-                    <label htmlFor="profile-end-date" className="mb-1 text-xs text-gray-600">End Date</label>
+                    <label htmlFor="profile-end-date" className="mb-1 text-xs text-gray-600">{t("end_date")}</label>
                     <input
                       id="profile-end-date"
                       type="date"
@@ -483,7 +496,6 @@ const Profile = () => {
               )}
             </div>
           </div>
-
           {filteredExpenses && filteredExpenses.length > 0 ? (
             <ul className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {filteredExpenses
@@ -498,7 +510,7 @@ const Profile = () => {
                       <div className="p-5">
                         <div className="mb-4 space-y-3">
                           <div>
-                            <label htmlFor={`edit-amount-${exp._id}`} className="block text-xs font-medium text-gray-700 mb-1">Amount</label>
+                            <label htmlFor={`edit-amount-${exp._id}`} className="block text-xs font-medium text-gray-700 mb-1">{t("amount")}</label>
                             <input
                               id={`edit-amount-${exp._id}`}
                               type="number"
@@ -510,7 +522,7 @@ const Profile = () => {
                             />
                           </div>
                           <div>
-                            <label htmlFor={`edit-category-${exp._id}`} className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                            <label htmlFor={`edit-category-${exp._id}`} className="block text-xs font-medium text-gray-700 mb-1">{t("category")}</label>
                             <input
                               id={`edit-category-${exp._id}`}
                               type="text"
@@ -519,18 +531,20 @@ const Profile = () => {
                               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
                             />
                           </div>
+                          {(usertypeFromCookie === "entrepreneur" || user.usertype === "entrepreneur") && ( // Fixed conditional logic
+                            <div>
+                              <label htmlFor={`edit-project-${exp._id}`} className="block text-xs font-medium text-gray-700 mb-1">{t("project")}</label>
+                              <input
+                                id={`edit-project-${exp._id}`}
+                                type="text"
+                                value={editProject}
+                                onChange={(e) => setEditProject(e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
+                              />
+                            </div>
+                          )}
                           <div>
-                            <label htmlFor={`edit-project-${exp._id}`} className="block text-xs font-medium text-gray-700 mb-1">Project</label>
-                            <input
-                              id={`edit-project-${exp._id}`}
-                              type="text"
-                              value={editProject}
-                              onChange={(e) => setEditProject(e.target.value)}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
-                            />
-                          </div>
-                          <div>
-                            <label htmlFor={`edit-date-${exp._id}`} className="block text-xs font-medium text-gray-700 mb-1">Date</label>
+                            <label htmlFor={`edit-date-${exp._id}`} className="block text-xs font-medium text-gray-700 mb-1">{t("date")}</label>
                             <input
                               id={`edit-date-${exp._id}`}
                               type="date"
@@ -540,7 +554,7 @@ const Profile = () => {
                             />
                           </div>
                           <div>
-                            <label htmlFor={`edit-description-${exp._id}`} className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                            <label htmlFor={`edit-description-${exp._id}`} className="block text-xs font-medium text-gray-700 mb-1">{t("description")}</label>
                             <textarea
                               id={`edit-description-${exp._id}`}
                               value={editDescription}
@@ -563,14 +577,14 @@ const Profile = () => {
                                 : "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
                               }`}
                           >
-                            {loadingEdit ? "Saving..." : "Save"}
+                            {loadingEdit ? t("saving") : t("save")}
                           </button>
                           <button
                             onClick={handleCancelEdit}
                             disabled={loadingEdit}
                             className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 active:bg-gray-400 transition shadow-sm disabled:opacity-50"
                           >
-                            Cancel
+                            {t("cancel")}
                           </button>
                         </div>
                       </div>
@@ -593,17 +607,17 @@ const Profile = () => {
                             </span>
                           </div>
                           <p className="text-right text-lg font-bold text-green-600 shrink-0">
-                            EGP {exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {user.currency || "EGP"} {exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                         <p className="text-gray-700 text-sm mt-3 line-clamp-2 min-h-[2.5rem]">
-                          {exp.description || <span className="text-gray-400 italic">No description</span>}
+                          {exp.description || <span className="text-gray-400 italic">{t("no_description")}</span>}
                         </p>
-                        {usertypeFromCookie !== "supervisor" && (
+                        {usertypeFromCookie !== "supervisor" && user.usertype !== "supervisor" && (
                           <div className="flex items-center justify-end gap-2 pt-4 mt-4 border-t border-gray-100">
                             <button
                               onClick={() => handleStartEdit(exp)}
-                              title="Edit Expense"
+                              title={t("edit_expense")}
                               className="p-2 rounded-lg hover:bg-gray-100 transition"
                             >
                               <PencilIcon className="w-4 h-4 text-blue-600" />
@@ -611,7 +625,7 @@ const Profile = () => {
                             <button
                               onClick={() => handleDelete(exp._id)}
                               disabled={loadingDelete === exp._id}
-                              title="Delete Expense"
+                              title={t("delete_expense")}
                               className="p-2 rounded-lg hover:bg-red-50 transition disabled:opacity-50"
                             >
                               <TrashIcon
@@ -627,7 +641,7 @@ const Profile = () => {
             </ul>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-500">No expenses found for the selected filters.</p>
+              <p className="text-gray-500">{t("no_expenses_found_filters")}</p>
             </div>
           )}
         </div>

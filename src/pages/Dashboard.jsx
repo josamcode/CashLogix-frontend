@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -15,9 +16,9 @@ function parseDateLocal(dateString) {
 }
 
 const Dashboard = () => {
+  const { t, i18n } = useTranslation();
   const { token, loadingToken } = useContext(AuthContext);
   const [user, setUser] = useState(null);
-
   const usertypeFromCookie = getCookie("role");
 
   const categoriesFromUser = useMemo(() => {
@@ -32,7 +33,6 @@ const Dashboard = () => {
 
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
 
@@ -58,7 +58,6 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
-
     if (loadingToken || !token) return;
 
     const fetchUser = async () => {
@@ -72,17 +71,17 @@ const Dashboard = () => {
         setUser(res.data.user);
         setError(null);
       } catch (err) {
-        setError(err.response?.data?.message || "Something went wrong");
+        setError(err.response?.data?.message || t("error_generic"));
         setUser(null);
         Cookies.remove("token");
-        navigate("/login");
+        window.location.reload();
       } finally {
         setLoading(false);
       }
     };
 
     fetchUser();
-  }, [token, loadingToken, navigate]);
+  }, [token, loadingToken, navigate, t]);
 
   // Totals
   const totalMonthlyAmount = useMemo(() => {
@@ -113,20 +112,21 @@ const Dashboard = () => {
     e.preventDefault();
     setCreateError(null);
     setCreateSuccess(null);
+
     if (!newAmount || !newCategory) {
-      setCreateError("Amount and category are required.");
+      setCreateError(t("error_amount_category_required"));
       return;
     }
+
     setCreatingExpense(true);
 
     const selectedDate = newDate ? parseDateLocal(newDate) : new Date();
     selectedDate.setHours(0, 0, 0, 0);
-
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
     if (selectedDate > now) {
-      setCreateError("Future dates are not allowed. Please select today or a past date.");
+      setCreateError(t("error_future_date_not_allowed"));
       setCreatingExpense(false);
       return;
     }
@@ -147,11 +147,13 @@ const Dashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       setUser((prevUser) => ({
         ...prevUser,
         expenses: [...prevUser.expenses, res.data.result],
       }));
-      setCreateSuccess("Expense created successfully.");
+
+      setCreateSuccess(t("success_expense_created"));
       setNewAmount("");
       setNewCategory("");
       setNewDescription("");
@@ -160,9 +162,10 @@ const Dashboard = () => {
       setNewProject("");
       setIsAddingProject(false);
       setNewProjectName("");
+
     } catch (err) {
       setCreateError(
-        err.response?.data?.message || "Failed to create expense."
+        err.response?.data?.message || t("error_create_expense_generic")
       );
     } finally {
       setCreatingExpense(false);
@@ -173,17 +176,17 @@ const Dashboard = () => {
   const oneMonthAgo = new Date();
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
-  if (loading) return <div className="p-8 text-center">Loading profile...</div>;
+  if (loading) return <div className="p-8 text-center">{t("loading_profile")}</div>;
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   return (
     <div className="sm:py-6 min-h-[calc(100vh-70px)] flex w-full items-start">
       <div className="w-full max-w-7xl mx-auto rounded-xl p-6">
         <h2 className="text-3xl font-bold text-textMain mb-6 font-kanit hidden sm:block">
-          Welcome, {user.username}
+          {t('welcome')}, {user.username}
         </h2>
 
-        {usertypeFromCookie !== "supervisor" && (
+        {usertypeFromCookie !== "supervisor" && user.usertype !== "supervisor" && (
           <form
             onSubmit={handleCreateExpense}
             className="mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 sm:bg-blue-50"
@@ -193,16 +196,20 @@ const Dashboard = () => {
                 {createError}
               </div>
             )}
-
+            {createSuccess && (
+              <div className="mb-4 text-green-600 font-semibold">
+                {createSuccess}
+              </div>
+            )}
             <h3 className="text-xl sm:text-2xl font-semibold mb-6 text-gray-800">
-              Add New Expense
+              {t("add_new_expense")}
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Amount */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm text-gray-600 font-medium">
-                  Amount (EGP)
+                  {t("amount")} ({user.currency || "EGP"})
                 </label>
                 <input
                   type="number"
@@ -211,7 +218,7 @@ const Dashboard = () => {
                   value={newAmount}
                   onChange={(e) => setNewAmount(e.target.value)}
                   required
-                  placeholder="e.g. 150"
+                  placeholder={t("placeholder_amount")}
                   className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
                 />
               </div>
@@ -219,9 +226,8 @@ const Dashboard = () => {
               {/* Category Select */}
               <div className="flex flex-col gap-1 sm:col-span-1">
                 <label className="text-sm text-gray-600 font-medium">
-                  Category
+                  {t("category")}
                 </label>
-
                 {!isAddingCategory ? (
                   <select
                     value={newCategory}
@@ -236,19 +242,19 @@ const Dashboard = () => {
                     required
                     className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
                   >
-                    <option value="">Select Category</option>
+                    <option value="">{t("select_category")}</option>
                     {categoriesFromUser.map((cat) => (
                       <option key={cat} value={cat}>
                         {cat}
                       </option>
                     ))}
-                    <option value="__add_new__">+ Add New Category</option>
+                    <option value="__add_new__">{t("add_new_category")}</option>
                   </select>
                 ) : (
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Enter new category"
+                      placeholder={t("placeholder_enter_new_category")}
                       value={newCategoryName}
                       onChange={(e) => {
                         setNewCategoryName(e.target.value);
@@ -266,7 +272,7 @@ const Dashboard = () => {
                       }}
                       className="text-red-500 hover:text-red-700 font-medium text-sm"
                     >
-                      Cancel
+                      {t("cancel")}
                     </button>
                   </div>
                 )}
@@ -275,7 +281,7 @@ const Dashboard = () => {
               {/* Date Picker */}
               <div className="flex-1 flex flex-col gap-1">
                 <label className="text-sm text-gray-600 font-medium">
-                  Date
+                  {t("date")}
                 </label>
                 <DatePicker
                   selected={newDate ? new Date(newDate) : null}
@@ -290,77 +296,85 @@ const Dashboard = () => {
                   }}
                   dateFormat="yyyy-MM-dd"
                   minDate={oneMonthAgo}
-                  // maxDate={today}
-                  placeholderText="Pick a date (optional, today if left empty)"
+                  placeholderText={t("placeholder_date")}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
                   showPopperArrow={false}
                 />
               </div>
 
               {/* Project Select/Input */}
-              <div className="flex flex-col gap-1 sm:col-span-1">
-                <label className="text-sm text-gray-600 font-medium">
-                  Project (optional)
-                </label>
-                {!isAddingProject ? (
-                  <select
-                    value={newProject}
-                    onChange={(e) => {
-                      if (e.target.value === "__add_new_project__") {
-                        setIsAddingProject(true);
-                        setNewProject(""); // Clear the selection
-                      } else {
-                        setNewProject(e.target.value); // Select existing project
-                      }
-                    }}
-                    className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
-                  >
-                    <option value="">Select Project (optional)</option>
-                    {projectsFromUser.map((proj) => (
-                      <option key={proj} value={proj}>
-                        {proj}
-                      </option>
-                    ))}
-                    <option value="__add_new_project__">+ Add New Project</option>
-                  </select>
-                ) : (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter new project"
-                      value={newProjectName}
+              {(usertypeFromCookie === "entrepreneur" || user.usertype === "entrepreneur") && (
+                <div className="flex flex-col gap-1 sm:col-span-1">
+                  <label className="text-sm text-gray-600 font-medium">
+                    {t("project_optional")}
+                  </label>
+                  {!isAddingProject ? (
+                    <select
+                      value={newProject}
                       onChange={(e) => {
-                        setNewProjectName(e.target.value);
-                        setNewProject(e.target.value);
+                        if (e.target.value === "__add_new_project__") {
+                          setIsAddingProject(true);
+                          setNewProject("");
+                        } else {
+                          setNewProject(e.target.value);
+                        }
                       }}
-                      className="flex-grow border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsAddingProject(false);
-                        setNewProject("");
-                        setNewProjectName("");
-                      }}
-                      className="text-red-500 hover:text-red-700 font-medium text-sm"
+                      className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
                     >
-                      Cancel
-                    </button>
-                  </div>
-                )}
-              </div>
+                      <option value="">Select Project (optional)</option> {/* Consider translating this too if needed */}
+                      {projectsFromUser.map((proj) => (
+                        <option key={proj} value={proj}>
+                          {proj}
+                        </option>
+                      ))}
+                      <option value="__add_new_project__">{t("add_new_project")}</option>
+                    </select>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder={t("placeholder_enter_new_project")}
+                        value={newProjectName}
+                        onChange={(e) => {
+                          setNewProjectName(e.target.value);
+                          setNewProject(e.target.value);
+                        }}
+                        className="flex-grow border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAddingProject(false);
+                          setNewProject("");
+                          setNewProjectName("");
+                        }}
+                        className="text-red-500 hover:text-red-700 font-medium text-sm"
+                      >
+                        {t("cancel")}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Info Text for 'user' role */}
+              {usertypeFromCookie === "user" && user.usertype === "user" && (
+                <div className="flex flex-col justify-end gap-1 sm:col-span-1">
+                  <p className="text-sm text-gray-500">{t("info_date_defaults_to_today")}</p>
+                </div>
+              )}
 
               {/* Description */}
               <div className="sm:col-span-2 flex flex-col gap-1">
                 <label className="text-sm text-gray-600 font-medium">
-                  Description (optional)
+                  {t("description")} ({t("optional")})
                 </label>
                 <textarea
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                   className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
                   rows={3}
-                  placeholder="e.g. Lunch at work, electricity bill..."
+                  placeholder={t("placeholder_description")}
                 />
               </div>
             </div>
@@ -371,7 +385,7 @@ const Dashboard = () => {
               disabled={creatingExpense}
               className="mt-6 w-full bg-blue-600 text-white px-5 py-2.5 rounded-md hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium"
             >
-              {creatingExpense ? "Adding..." : "Add Expense"}
+              {creatingExpense ? t("adding") : t("add_expense")}
             </button>
           </form>
         )}
@@ -379,23 +393,24 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-6">
           <div className="p-3 sm:p-4 border rounded-md bg-blue-50">
             <p className="pb-2 text-sm text-gray-600">
-              Total Expenses This Month
+              {t("total_expenses_this_month")}
             </p>
             <p className="text-2xl font-bold text-blue-700">
-              EGP {totalMonthlyAmount}
+              {user.currency || "EGP"} {totalMonthlyAmount}
             </p>
           </div>
           <div className="p-3 sm:p-4 border rounded-md bg-green-50 hidden sm:block">
-            <p className="pb-2 text-sm text-gray-600">All-Time Total</p>
+            <p className="pb-2 text-sm text-gray-600">{t("all_time_total")}</p>
             <p className="text-2xl font-bold text-green-700">
-              EGP{" "}
+              {user.currency || "EGP"}{" "}
               {user.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0}
             </p>
           </div>
         </div>
+
         <div className="hidden sm:block">
           <div>
-            <h3 className="text-2xl font-semibold mb-4">Recent Expenses</h3>
+            <h3 className="text-2xl font-semibold mb-4">{t("recent_expenses")}</h3>
             {filteredExpenses && filteredExpenses.length > 0 ? (
               <ul className="grid gap-5 sm:grid-cols-1 md:grid-cols-2">
                 {filteredExpenses.slice(0, 3).map((exp) => (
@@ -416,18 +431,16 @@ const Dashboard = () => {
                         {new Date(exp.date).toLocaleDateString()}
                       </span>
                     </div>
-
                     <p
                       className={`text-gray-700 mb-2 line-clamp-2 ${/[\u0600-\u06FF]/.test(exp.description)
                         ? "font-Rubik"
                         : ""
                         }`}
                     >
-                      {exp.description || ""}
+                      {exp.description || t("no_description")}
                     </p>
-
                     <p className="text-right text-lg font-bold text-green-600">
-                      EGP {exp.amount}
+                      {user.currency || "EGP"} {exp.amount}
                     </p>
                   </li>
                 ))}
@@ -436,12 +449,12 @@ const Dashboard = () => {
                     to="/profile"
                     className="rounded-xl h-full border border-gray-200 bg-white shadow-sm p-5 cursor-pointer hover:bg-gray-50 flex items-center justify-center text-blue-600 font-semibold gap-2"
                   >
-                    Show more <ArrowRightIcon className="w-5 h-5" />
+                    {t("show_more")} <ArrowRightIcon className="w-5 h-5" />
                   </Link>
                 </li>
               </ul>
             ) : (
-              <p className="text-gray-500">No expenses recorded yet.</p>
+              <p className="text-gray-500">{t("no_expenses_recorded_yet")}</p>
             )}
           </div>
         </div>
