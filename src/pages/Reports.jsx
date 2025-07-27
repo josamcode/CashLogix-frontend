@@ -696,7 +696,7 @@ const Reports = () => {
         </div>
 
         {/* Charts Section */}
-        <div className="px-6 py-6 sm:px-8 sm:py-8" dir="ltr">
+        <div className="px-6 py-6 sm:px-8 sm:py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             {/* Pie Chart - Expenses by Category */}
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
@@ -704,38 +704,40 @@ const Reports = () => {
                 {t("expenses_by_category")}
               </h3>
               {expensesByCategory.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={expensesByCategory}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={true}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
-                      }
-                    >
-                      {expensesByCategory.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip
-                      formatter={(value) =>
-                        `${user?.currency || "EGP"} ${Number(value).toLocaleString(
-                          undefined,
-                          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-                        )}`
-                      }
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div dir="ltr">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={expensesByCategory}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={true}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) =>
+                          `${name}: ${(percent * 100).toFixed(0)}%`
+                        }
+                      >
+                        {expensesByCategory.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip
+                        formatter={(value) =>
+                          `${user?.currency || "EGP"} ${Number(value).toLocaleString(
+                            undefined,
+                            { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                          )}`
+                        }
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
                 <p className="text-gray-500 text-center py-10">
                   {t("no_data_available")}
@@ -749,31 +751,33 @@ const Reports = () => {
                 {t("top_5_categories")}
               </h3>
               {topCategories.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart
-                    data={topCategories}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="name"
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis />
-                    <RechartsTooltip
-                      formatter={(value) =>
-                        `${user?.currency || "EGP"} ${Number(value).toLocaleString(
-                          undefined,
-                          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-                        )}`
-                      }
-                    />
-                    <Bar dataKey="value" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div dir="ltr">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={topCategories}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="name"
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                        tick={{ fontSize: 12 }}
+                      />
+                      <YAxis />
+                      <RechartsTooltip
+                        formatter={(value) =>
+                          `${user?.currency || "EGP"} ${Number(value).toLocaleString(
+                            undefined,
+                            { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                          )}`
+                        }
+                      />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
                 <p className="text-gray-500 text-center py-10">
                   {t("no_data_available")}
@@ -789,36 +793,38 @@ const Reports = () => {
                 {t("cumulative_expenses_over_time")}
               </h3>
               {cumulativeExpensesData.length > 1 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart
-                    data={cumulativeExpensesData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 20 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="date"
-                      angle={-45}
-                      textAnchor="end"
-                      height={40}
-                      tick={{ fontSize: 10 }}
-                    />
-                    <YAxis />
-                    <RechartsTooltip
-                      formatter={(value) =>
-                        `${user?.currency || "EGP"} ${Number(value).toLocaleString(
-                          undefined,
-                          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-                        )}`
-                      }
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="cumulative"
-                      stroke="#8884d8"
-                      activeDot={{ r: 8 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div dir="ltr">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart
+                      data={cumulativeExpensesData}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 20 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        angle={-45}
+                        textAnchor="end"
+                        height={40}
+                        tick={{ fontSize: 10 }}
+                      />
+                      <YAxis />
+                      <RechartsTooltip
+                        formatter={(value) =>
+                          `${user?.currency || "EGP"} ${Number(value).toLocaleString(
+                            undefined,
+                            { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                          )}`
+                        }
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="cumulative"
+                        stroke="#8884d8"
+                        activeDot={{ r: 8 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
                 <p className="text-gray-500 text-center py-10">
                   {t("not_enough_data_for_trend")}
@@ -832,26 +838,28 @@ const Reports = () => {
                 {t("category_comparison_radar")}
               </h3>
               {categoryRadarData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <RadarChart
-                    cx="50%"
-                    cy="50%"
-                    outerRadius="80%"
-                    data={categoryRadarData}
-                  >
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="category" />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                    <Radar
-                      name="Category"
-                      dataKey="value"
-                      stroke={RADAR_COLORS[0]}
-                      fill={RADAR_COLORS[0]}
-                      fillOpacity={0.6}
-                    />
-                    <RechartsTooltip />
-                  </RadarChart>
-                </ResponsiveContainer>
+                <div dir="ltr">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <RadarChart
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="80%"
+                      data={categoryRadarData}
+                    >
+                      <PolarGrid />
+                      <PolarAngleAxis dataKey="category" />
+                      <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                      <Radar
+                        name="Category"
+                        dataKey="value"
+                        stroke={RADAR_COLORS[0]}
+                        fill={RADAR_COLORS[0]}
+                        fillOpacity={0.6}
+                      />
+                      <RechartsTooltip />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
                 <p className="text-gray-500 text-center py-10">
                   {t("no_data_available")}
